@@ -5,6 +5,7 @@ import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+
 // logging in to the portal
 export async function login(req, res) {
   let { email, password } = req.body;
