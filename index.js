@@ -32,4 +32,5 @@ app.use("/api/v1/auth", authRouter);
 
 app.listen(port, (req, res) => {
   console.log(`Running on port http://localhost:${port}`);
+  console.log("Working fine " + process.env.PORT);
 });
