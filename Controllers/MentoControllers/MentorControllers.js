@@ -12,6 +12,7 @@ import {
   fetchAllMentorQuery,
   fetchSingleMentorQuery,
   mentorDtlsQuery,
+  testQuery,
   userDtlsQuery,
 } from "../../SQLQueries/MentorSQLQueries.js";
 import { mentorApplicationEmail } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
@@ -418,6 +419,37 @@ export async function fetchAllMentorDetails(req, res) {
       if (db) {
         const request = new sql.Request();
         request.query(fetchAllMentorQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: "There was an error while fetching the data.",
+            });
+          }
+          if (result) {
+            return res.json({
+              success: result.recordset,
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: "There was an error while fetching the data.",
+    });
+  }
+}
+
+export async function test(req, res) {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: "There was an error while fetching the data.",
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.query(testQuery, (err, result) => {
           if (err) {
             return res.json({
               error: "There was an error while fetching the data.",
