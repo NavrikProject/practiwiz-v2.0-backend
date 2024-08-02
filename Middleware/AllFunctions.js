@@ -5,17 +5,17 @@ import intoStream from "into-stream";
 dotenv.config();
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-export function sendEmail(msg) {
-  sgMail
-    .send(msg)
-    .then(() => {
-      console.log("Email sent");
-      return True;
-    })
-    .catch((error) => {
-      console.error(error.message);
-      return False;
-    });
+export async function sendEmail(msg) {
+  const successEmail = "True";
+  const errorEmail = "False";
+  try {
+    await sgMail.send(msg);
+    console.log("Email sent");
+    return successEmail;
+  } catch (error) {
+    console.error(error.message);
+    return errorEmail;
+  }
 }
 
 export function uploadMentorPhotoToAzure(imageData, blobName) {

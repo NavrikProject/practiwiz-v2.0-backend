@@ -3,16 +3,20 @@ import jwt from "jsonwebtoken";
 import sql from "mssql";
 import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
-import { uploadMentorPhotoToAzure } from "../../Middleware/AllFunctions.js";
-import moment from "moment";
-
 import {
+  sendEmail,
+  uploadMentorPhotoToAzure,
+} from "../../Middleware/AllFunctions.js";
+import moment from "moment";
+import {
+  fetchAllMentorQuery,
+  fetchSingleMentorQuery,
   mentorDtlsQuery,
-  mentorExpertiseQuery,
   userDtlsQuery,
 } from "../../SQLQueries/MentorSQLQueries.js";
+import { mentorApplicationEmail } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
 dotenv.config();
-// Get the directory name
+
 export async function MentorRegistration(req, res, next) {
   const {
     firstName,
@@ -45,7 +49,6 @@ export async function MentorRegistration(req, res, next) {
     Sun,
   } = req.body;
   const imageData = req.files;
-  //console.log(req.files.image);
   const lowEmail = email.toLowerCase();
   const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
   if (
@@ -147,7 +150,7 @@ export async function MentorRegistration(req, res, next) {
               request.input("mentor_dtls_update_date", sql.DateTime, timestamp);
               request.input("mentor_headline", sql.VarChar, headline);
               // Execute the query
-              request.query(mentorDtlsQuery, (err, result) => {
+              request.query(mentorDtlsQuery, async (err, result) => {
                 if (err) {
                   console.log(
                     "There is something went wrong. Please try again later.",
@@ -219,7 +222,8 @@ export async function MentorRegistration(req, res, next) {
                       "Mon",
                       timestamp
                     );
-                  } else if (Tue !== "undefined") {
+                  }
+                  if (Tue !== "undefined") {
                     const tueDayParsedArray = JSON.parse(Tue);
                     arrayFunctions(
                       tueDayParsedArray,
@@ -227,14 +231,16 @@ export async function MentorRegistration(req, res, next) {
                       "Tue",
                       timestamp
                     );
-                  } else if (Wed !== "undefined") {
+                  }
+                  if (Wed !== "undefined") {
                     const wedDayParsedArray = JSON.parse(Wed);
                     arrayFunctions(
                       wedDayParsedArray,
                       mentorDtlsId,
                       "Wed".timestamp
                     );
-                  } else if (Thu !== "undefined") {
+                  }
+                  if (Thu !== "undefined") {
                     const thuDayParsedArray = JSON.parse(Thu);
                     arrayFunctions(
                       thuDayParsedArray,
@@ -242,7 +248,8 @@ export async function MentorRegistration(req, res, next) {
                       "Wed",
                       timestamp
                     );
-                  } else if (Fri !== "undefined") {
+                  }
+                  if (Fri !== "undefined") {
                     const friDayParsedArray = JSON.parse(Fri);
                     arrayFunctions(
                       friDayParsedArray,
@@ -250,7 +257,8 @@ export async function MentorRegistration(req, res, next) {
                       "Fri",
                       timestamp
                     );
-                  } else if (Sat !== "undefined") {
+                  }
+                  if (Sat !== "undefined") {
                     const satDayParsedArray = JSON.parse(Sat);
                     arrayFunctions(
                       satDayParsedArray,
@@ -258,7 +266,8 @@ export async function MentorRegistration(req, res, next) {
                       "Sat",
                       timestamp
                     );
-                  } else if (Sun !== "undefined") {
+                  }
+                  if (Sun !== "undefined") {
                     const sunDayParsedArray = JSON.parse(Sun);
                     arrayFunctions(
                       sunDayParsedArray,
@@ -267,9 +276,29 @@ export async function MentorRegistration(req, res, next) {
                       timestamp
                     );
                   }
-                  return res.json({
-                    success: "Thank you for applying the mentor application",
-                  });
+                  const msg = mentorApplicationEmail(
+                    email,
+                    firstName + " " + lastName
+                  );
+                  const response = await sendEmail(msg);
+                  if (
+                    response === "True" ||
+                    response === "true" ||
+                    response === true
+                  ) {
+                    return res.json({
+                      success: "Thank you for applying the mentor application",
+                    });
+                  }
+                  if (
+                    response === "False" ||
+                    response === "false" ||
+                    response === false
+                  ) {
+                    return res.json({
+                      success: "Thank you for applying the mentor application",
+                    });
+                  }
                 } else {
                   console.error("No record inserted or returned.");
                   return res.json({ err: "No record inserted or returned." });
@@ -298,11 +327,17 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
           const ToHour = item.to.hours;
           const ToMinute = item.to.minutes;
           const ToMeridian = item.to.ampm;
-          const mentorRecType = item.mentor_timeslot_rec_indicator;
-          const mentorRecEndDate = item.Mentor_timeslot_rec_end_date;
+          let mentorRecType = item.mentor_timeslot_rec_indicator;
+          const mentorRecEndDate = item.recurring;
           const FromTime = FromHour + ":" + FromMinute + FromMeridian;
           const ToTime = ToHour + ":" + ToMinute + ToMeridian;
-          console.log(mentorRecType);
+          if (
+            mentorRecType === "" ||
+            mentorRecType === "undefined" ||
+            mentorRecType === null
+          ) {
+            mentorRecType = "Daily";
+          }
           request.query(
             "INSERT INTO mentor_timeslots_dtls (mentor_dtls_id,mentor_timeslot_day,mentor_timeslot_from,mentor_timeslot_to,mentor_timeslot_rec_indicator,mentor_timeslot_rec_end_timeframe,mentor_timeslot_rec_cr_date,mentor_timeslot_rec_update_date) VALUES('" +
               mentorDtlsId +
@@ -335,5 +370,70 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
     });
   } catch (error) {
     console.log(error.message);
+  }
+}
+
+export async function fetchSingleMentorDetails(req, res) {
+  const id = req.params.id;
+  const { userId } = req.body;
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: "There was an error while fetching the data.",
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.input("desired_mentor_dtls_id", sql.Int, userId);
+        request.query(fetchSingleMentorQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: "There was an error while fetching the data.",
+            });
+          }
+          if (result) {
+            return res.json({
+              success: result.recordset,
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: "There was an error while fetching the data.",
+    });
+  }
+}
+
+export async function fetchAllMentorDetails(req, res) {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: "There was an error while fetching the data.",
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.query(fetchAllMentorQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: "There was an error while fetching the data.",
+            });
+          }
+          if (result) {
+            return res.json({
+              success: result.recordset,
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: "There was an error while fetching the data.",
+    });
   }
 }

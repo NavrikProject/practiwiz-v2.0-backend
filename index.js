@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import multer from "multer";
+import sql from "mssql";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -10,11 +11,8 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import authRouter from "./Routes/AuthRoutes/AuthRoutes.js";
 import mentorRouter from "./Routes/MentorRoutes/MentorRoutes.js";
-import { BlobServiceClient } from "@azure/storage-blob";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import { MentorRegistration } from "./Controllers/MentoControllers/MentorControllers.js";
-
+import config from "./Config/dbConfig.js";
+import { mentorSelectSQLQuery } from "./SQLQueries/MentorSQLQueries.js";
 dotenv.config();
 
 const app = express();
@@ -79,27 +77,24 @@ app.use("/api/v1/auth", authRouter);
 // Mentor routes
 app.use("/api/v1/mentor", mentorRouter);
 
-// Route to handle file upload
-app.post(
-  "/api/v1/mentor/registration/test",
-  // Use Multer middleware to handle file upload
-  (req, res) => {
-    console.log(req.body);
-    try {
-      if (!req.files) {
-        return res.status(400).json({ message: "No file uploaded" });
+async function connectToDatabases() {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        console.log(err.message);
       }
-      console.log("File received:", req.files); // Log received file details
-      res
-        .status(200)
-        .json({ message: "File uploaded successfully", file: req.file });
-    } catch (error) {
-      console.error("Error handling file:", error);
-      res.status(500).json({ message: "Error uploading file" });
-    }
+      if (db) {
+        console.log("Connected to database successfully");
+      }
+    });
+  } catch (error) {
+    console.log(error.message);
   }
-);
-
+}
+//connectToDatabases();
+setInterval(() => {
+  connectToDatabases();
+}, 360000);
 // Start the server
 app.listen(port, () => {
   console.log(`Running on port http://localhost:${port}`);
