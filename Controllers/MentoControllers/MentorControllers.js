@@ -383,7 +383,7 @@ export async function fetchSingleMentorDetails(req, res) {
     sql.connect(config, (err, db) => {
       if (err) {
         return res.json({
-          error: "There was an error while fetching the data.",
+          error: err.message,
         });
       }
       if (db) {
@@ -392,7 +392,7 @@ export async function fetchSingleMentorDetails(req, res) {
         request.query(fetchSingleMentorQuery, (err, result) => {
           if (err) {
             return res.json({
-              error: "There was an error while fetching the data.",
+              error: err.message,
             });
           }
           if (result) {
@@ -405,7 +405,7 @@ export async function fetchSingleMentorDetails(req, res) {
     });
   } catch (error) {
     return res.json({
-      error: "There was an error while fetching the data.",
+      error: error.message,
     });
   }
 }
@@ -415,7 +415,7 @@ export async function fetchAllMentorDetails(req, res) {
     sql.connect(config, (err, db) => {
       if (err) {
         return res.json({
-          error: "There was an error while fetching the data.",
+          error: err.message,
         });
       }
       if (db) {
@@ -423,7 +423,7 @@ export async function fetchAllMentorDetails(req, res) {
         request.query(fetchAllMentorQuery, (err, result) => {
           if (err) {
             return res.json({
-              error: "There was an error while fetching the data.",
+              error: err.message,
             });
           }
           if (result) {
@@ -436,7 +436,7 @@ export async function fetchAllMentorDetails(req, res) {
     });
   } catch (error) {
     return res.json({
-      error: "There was an error while fetching the data.",
+      error: error.message,
     });
   }
 }

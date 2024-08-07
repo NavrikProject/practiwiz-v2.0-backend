@@ -70,7 +70,27 @@ app.get("/", async (req, res) => {
     success: `The server is working fine on the date ${date} and ${time}`,
   });
 });
-
+// Endpoint to check server status
+app.get("/test/db-connection", async (req, res) => {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          message: "There was an error connecting to database",
+          error: err.message,
+        });
+      }
+      if (db) {
+        return res.json({ success: "Connected to database successfully" });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      message: "There was an error connecting to database",
+      error: err.message,
+    });
+  }
+});
 // Authentication routes
 app.use("/api/v1/auth", authRouter);
 
@@ -78,48 +98,6 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/mentor", mentorRouter);
 
 async function connectToDatabases() {
-  const mentorId = 11;
-  const mentorQuery = `
-    SELECT 
-        [mentor_dtls_id],
-        [mentor_user_dtls_id],
-        [mentor_phone_number],
-        [mentor_email],
-        [mentor_profile_photo],
-        [mentor_social_media_profile],
-        [mentor_job_title],
-        [mentor_company_name],
-        [mentor_years_of_experience],
-        [mentor_academic_qualification],
-        [mentor_recommended_area_of_mentorship],
-        [mentor_guest_lectures_interest],
-        [mentor_curating_case_studies_interest],
-        [mentor_sessions_free_of_charge],
-        [mentor_language],
-        [mentor_timezone],
-        [mentor_country],
-        [mentor_dtls_cr_date],
-        [mentor_dtls_update_date],
-        [mentor_headline],
-        [mentor_approved_status]
-    FROM 
-        [dbo].[mentor_dtls]
-    WHERE 
-        [mentor_dtls_id] = ?
-`;
-
-  const expertiseQuery = `
-    SELECT 
-        [mentor_expertise_id],
-        [mentor_dtls_id],
-        [mentor_expertise],
-        [mentor_exp_cr_date],
-        [mentor_exp_update_date]
-    FROM 
-        [dbo].[mentor_expertise_dtls]
-    WHERE 
-        [mentor_dtls_id] = ?
-`;
   try {
     sql.connect(config, (err, db) => {
       if (err) {
