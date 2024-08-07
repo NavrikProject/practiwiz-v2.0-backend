@@ -18,6 +18,7 @@ import {
 import { mentorApplicationEmail } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
 dotenv.config();
 
+// registering of the mentor application
 export async function MentorRegistration(req, res, next) {
   const {
     firstName,
@@ -374,6 +375,7 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
   }
 }
 
+// to fetch single mentor and need to pass the user id
 export async function fetchSingleMentorDetails(req, res) {
   const id = req.params.id;
   const { userId } = req.body;
@@ -407,7 +409,7 @@ export async function fetchSingleMentorDetails(req, res) {
     });
   }
 }
-
+// to fetch the all mentors
 export async function fetchAllMentorDetails(req, res) {
   try {
     sql.connect(config, (err, db) => {
