@@ -26,10 +26,10 @@ export const userDtlsQuery = `
             @user_logintime,
             @user_token
           );
-          `;
+`;
 
 export const mentorDtlsQuery = `
-  INSERT INTO [dbo].[mentor_dtls] (
+INSERT INTO [dbo].[mentor_dtls] (
     [mentor_user_dtls_id],
     [mentor_phone_number],
     [mentor_email],
@@ -48,8 +48,9 @@ export const mentorDtlsQuery = `
     [mentor_country],
     [mentor_dtls_cr_date],
     [mentor_dtls_update_date],
-    [mentor_headline]
-  ) OUTPUT INSERTED.mentor_dtls_id VALUES (
+    [mentor_headline],   
+    [mentor_pricing]
+) OUTPUT INSERTED.mentor_dtls_id VALUES (
     @mentor_user_dtls_id,
     @mentor_phone_number,
     @mentor_email,
@@ -68,15 +69,16 @@ export const mentorDtlsQuery = `
     @mentor_country,
     @mentor_dtls_cr_date,
     @mentor_dtls_update_date,
-    @mentor_headline
-  );
+    @mentor_headline,
+    @mentor_pricing
+);
 `;
 
 export const mentorExpertiseQuery = `
         INSERT INTO mentor_expertise_dtls 
         (mentor_dtls_id, mentor_expertise, mentor_exp_cr_date, mentor_exp_update_date)
         VALUES (@mentor_dtls_id, @mentor_expertise, @mentor_exp_cr_date, @mentor_exp_update_date)
-      `;
+`;
 // fetch single mentor working
 export const fetchSingleMentorQuery = `SELECT 
     u.[user_dtls_id],
@@ -106,6 +108,7 @@ export const fetchSingleMentorQuery = `SELECT
     m.[mentor_dtls_update_date],
     m.[mentor_headline],
     m.[mentor_approved_status],
+    m.[mentor_pricing],
     (
         SELECT 
             e.[mentor_expertise_id],
@@ -185,6 +188,7 @@ export const fetchAllMentorQuery = `SELECT
     m.[mentor_dtls_update_date],
     m.[mentor_headline],
     m.[mentor_approved_status],
+    m.[mentor_pricing],
     (
         SELECT 
             e.[mentor_expertise_id],

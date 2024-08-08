@@ -49,6 +49,7 @@ export async function MentorRegistration(req, res, next) {
     Fri,
     Sat,
     Sun,
+    pricing,
   } = req.body;
   const imageData = req.files;
   const lowEmail = email.toLowerCase();
@@ -151,6 +152,7 @@ export async function MentorRegistration(req, res, next) {
               request.input("mentor_dtls_cr_date", sql.DateTime, timestamp);
               request.input("mentor_dtls_update_date", sql.DateTime, timestamp);
               request.input("mentor_headline", sql.VarChar, headline);
+              request.input("mentor_pricing", sql.VarChar, pricing);
               // Execute the query
               request.query(mentorDtlsQuery, async (err, result) => {
                 if (err) {
@@ -329,8 +331,8 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
           const ToHour = item.to.hours;
           const ToMinute = item.to.minutes;
           const ToMeridian = item.to.ampm;
-          let mentorRecType = item.mentor_timeslot_rec_indicator;
-          const mentorRecEndDate = item.recurring;
+          let mentorRecType = item.recurring.mentor_timeslot_rec_indicator;
+          const mentorRecEndDate = item.date.Mentor_timeslot_rec_end_date;
           const FromTime = FromHour + ":" + FromMinute + FromMeridian;
           const ToTime = ToHour + ":" + ToMinute + ToMeridian;
           if (
