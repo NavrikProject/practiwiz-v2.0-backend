@@ -115,6 +115,7 @@ connectToDatabases();
 setInterval(() => {
   connectToDatabases();
 }, 360000);
+
 // Start the server
 app.listen(port, () => {
   console.log(`Running on port http://localhost:${port}`);
