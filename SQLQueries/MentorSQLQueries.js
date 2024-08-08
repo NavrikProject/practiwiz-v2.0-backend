@@ -142,7 +142,8 @@ export const fetchSingleMentorQuery = `SELECT
             t.[mentor_timeslot_to],
             t.[mentor_timeslot_rec_indicator],
             t.[mentor_timeslot_rec_end_timeframe],
-            t.[mentor_timeslot_rec_cr_date]
+            t.[mentor_timeslot_rec_cr_date],
+            t.[mentor_timeslot_booking_status]
         FROM 
             [dbo].[mentor_timeslots_dtls] t
         WHERE 
@@ -222,7 +223,8 @@ export const fetchAllMentorQuery = `SELECT
             t.[mentor_timeslot_to],
             t.[mentor_timeslot_rec_indicator],
             t.[mentor_timeslot_rec_end_timeframe],
-            t.[mentor_timeslot_rec_cr_date]
+            t.[mentor_timeslot_rec_cr_date],
+            t.[mentor_timeslot_booking_status]
         FROM 
             [dbo].[mentor_timeslots_dtls] t
         WHERE 
