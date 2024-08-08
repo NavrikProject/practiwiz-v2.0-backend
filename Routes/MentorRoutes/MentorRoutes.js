@@ -4,7 +4,7 @@ import {
   fetchSingleMentorDetails,
   MentorRegistration,
   test,
-} from "../../Controllers/MentorControllers/MentorControllers.jss";
+} from "../../Controllers/MentorControllers/MentorControllers.js";
 
 const router = express.Router();
 router.post("/register", MentorRegistration);
