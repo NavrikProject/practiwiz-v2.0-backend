@@ -11,6 +11,7 @@ import moment from "moment";
 import {
   fetchAllMentorQuery,
   fetchSingleMentorQuery,
+  fetchSingleMentorQueryWithBookings,
   mentorDtlsQuery,
   testQuery,
   userDtlsQuery,
@@ -391,15 +392,19 @@ export async function fetchSingleMentorDetails(req, res) {
       if (db) {
         const request = new sql.Request();
         request.input("desired_mentor_dtls_id", sql.Int, userId);
-        request.query(fetchSingleMentorQuery, (err, result) => {
+        request.query(fetchSingleMentorQueryWithBookings, (err, result) => {
           if (err) {
             return res.json({
               error: err.message,
             });
           }
-          if (result) {
+          if (result.recordset.length > 0) {
             return res.json({
               success: result.recordset,
+            });
+          } else {
+            return res.json({
+              error: "mentor is not approved yet",
             });
           }
         });
@@ -428,9 +433,13 @@ export async function fetchAllMentorDetails(req, res) {
               error: err.message,
             });
           }
-          if (result) {
+          if (result.recordset.length > 0) {
             return res.json({
               success: result.recordset,
+            });
+          } else {
+            return res.json({
+              error: "No mentor has been approved",
             });
           }
         });

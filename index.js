@@ -12,7 +12,6 @@ import bodyParser from "body-parser";
 import authRouter from "./Routes/AuthRoutes/AuthRoutes.js";
 import mentorRouter from "./Routes/MentorRoutes/MentorRoutes.js";
 import config from "./Config/dbConfig.js";
-import { mentorSelectSQLQuery } from "./SQLQueries/MentorSQLQueries.js";
 dotenv.config();
 
 const app = express();
