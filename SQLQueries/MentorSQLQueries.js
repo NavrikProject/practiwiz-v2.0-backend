@@ -243,7 +243,7 @@ WHERE
     m.[mentor_approved_status] = 'Yes'
 `;
 
-// to fetch the booking details and timeslots and everything
+// to fetch the booking details and timeslots and everything this is working right now
 export const fetchSingleMentorQueryWithBookings = `SELECT 
     u.[user_dtls_id],
     u.[user_email],
