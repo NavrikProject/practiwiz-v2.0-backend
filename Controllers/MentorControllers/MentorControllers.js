@@ -9,6 +9,7 @@ import {
 } from "../../Middleware/AllFunctions.js";
 import moment from "moment";
 import {
+  fetch10MentorQuery,
   fetchAllMentorQuery,
   fetchSingleMentorQuery,
   fetchSingleMentorQueryWithBookings,
@@ -452,6 +453,40 @@ export async function fetchAllMentorDetails(req, res) {
   }
 }
 
+export async function fetch10MentorInHome(req, res, next) {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: err.message,
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.query(fetch10MentorQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: err.message,
+            });
+          }
+          if (result.recordset.length > 0) {
+            return res.json({
+              success: result.recordset,
+            });
+          } else {
+            return res.json({
+              error: "No mentor has been approved",
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
 export async function test(req, res) {
   try {
     sql.connect(config, (err, db) => {

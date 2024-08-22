@@ -1,4 +1,5 @@
 {
   "appService.zipIgnorePattern": ["node_modules{,/**}", ".vscode{,/**}"],
-  "appService.defaultWebAppToDeploy": "None"
+  "appService.defaultWebAppToDeploy": "None",
+  "cSpell.words": ["mentee", "razorpay"]
 }

@@ -12,7 +12,7 @@ export const userDtlsQuery = `
             [user_logindate],
             [user_logintime],
             [user_token]
-          ) OUTPUT INSERTED.user_dtls_id VALUES (
+        ) OUTPUT INSERTED.user_dtls_id VALUES (
             @user_email,
             @user_pwd,
             @user_firstname,
@@ -25,7 +25,7 @@ export const userDtlsQuery = `
             @user_logindate,
             @user_logintime,
             @user_token
-          );
+        );
 `;
 
 export const mentorDtlsQuery = `
@@ -340,6 +340,167 @@ WHERE
     u.[user_dtls_id] = @desired_mentor_dtls_id 
 AND
     m.[mentor_approved_status] = 'Yes'
+`;
+
+// Prepare the SQL query
+export const MentorBookingOrderQuery = `
+            INSERT INTO [dbo].[mentor_bookings_raz_order_dtls] 
+            (
+                [mentor_booking_raz_dlts_id],
+                [mentee_booking_raz_user_dtls_id],
+                [mentee_email],
+                [amount],
+                [amount_due],
+                [amount_paid],
+                [attempts],
+                [created_at],
+                [currency],
+                [entity],
+                [id],
+                [offer_id],
+                [receipt],
+                [status]
+            ) 
+            VALUES 
+            (
+                @mentorBookingRazDltsId,
+                @menteeBookingRazUserDtlsId,
+                @menteeEmail,
+                @amount,
+                @amountDue,
+                @amountPaid,
+                @attempts,
+                @createdAt,
+                @currency,
+                @entity,
+                @id,
+                @offerId,
+                @receipt,
+                @status
+            )
+        `;
+
+// Prepare the SQL query
+export const MentorBookingAppointmentQuery = `
+            INSERT INTO [dbo].[mentor_booking_appointments_dtls] 
+            (
+                [mentor_dtls_id],
+                [mentee_user_dtls_id],
+                [mentor_session_booking_date],
+                [mentor_booked_date],
+                [mentor_booking_starts_time],
+                [mentor_booking_end_time],
+                [mentor_booking_time],
+                [mentor_amount],
+                [mentor_options],
+                [mentor_questions],
+                [mentor_razorpay_payment_id],
+                [mentor_razorpay_order_id],
+                [mentor_razorpay_signature],
+                [mentor_host_url],
+                [trainee_join_url],
+                [mentor_amount_paid_status]
+            ) 
+            VALUES 
+            (
+                @mentorDtlsId,
+                @menteeUserDtlsId,
+                @mentorSessionBookingDate,
+                @mentorBookedDate,
+                @mentorBookingStartsTime,
+                @mentorBookingEndTime,
+                @mentorBookingTime,
+                @mentorAmount,
+                @mentorOptions,
+                @mentorQuestions,
+                @mentorRazorpayPaymentId,
+                @mentorRazorpayOrderId,
+                @mentorRazorpaySignature,
+                @mentorHostUrl,
+                @traineeJoinUrl,
+                @mentorAmountPaidStatus
+            )
+        `;
+
+// fetch all mentor queries
+export const fetch10MentorQuery = `SELECT TOP 10
+    u.[user_dtls_id],
+    u.[user_email],
+    u.[user_firstname],
+    u.[user_lastname],
+    u.[user_phone_number],
+    u.[user_type],
+    u.[user_is_superadmin],
+    m.[mentor_dtls_id],
+    m.[mentor_user_dtls_id],
+    m.[mentor_phone_number],
+    m.[mentor_email],
+    m.[mentor_profile_photo],
+    m.[mentor_social_media_profile],
+    m.[mentor_job_title],
+    m.[mentor_company_name],
+    m.[mentor_years_of_experience],
+    m.[mentor_academic_qualification],
+    m.[mentor_recommended_area_of_mentorship],
+    m.[mentor_guest_lectures_interest],
+    m.[mentor_curating_case_studies_interest],
+    m.[mentor_sessions_free_of_charge],
+    m.[mentor_language],
+    m.[mentor_timezone],
+    m.[mentor_country],
+    m.[mentor_dtls_cr_date],
+    m.[mentor_dtls_update_date],
+    m.[mentor_headline],
+    m.[mentor_approved_status],
+    m.[mentor_pricing]
+FROM 
+    [dbo].[users_dtls] u
+JOIN 
+    [dbo].[mentor_dtls] m
+ON 
+    u.[user_dtls_id] = m.[mentor_user_dtls_id]
+WHERE
+    m.[mentor_approved_status] = 'Yes' 
+`;
+
+export const fetchGuestLecturesQuery = `SELECT
+    u.[user_dtls_id],
+    u.[user_email],
+    u.[user_firstname],
+    u.[user_lastname],
+    u.[user_phone_number],
+    u.[user_type],
+    u.[user_is_superadmin],
+    m.[mentor_dtls_id],
+    m.[mentor_user_dtls_id],
+    m.[mentor_phone_number],
+    m.[mentor_email],
+    m.[mentor_guest_lectures_interest],
+    m.[mentor_curating_case_studies_interest],
+    m.[mentor_sessions_free_of_charge],
+    m.[mentor_language],
+    m.[mentor_country],
+    m.[mentor_approved_status],
+    (
+        SELECT 
+            e.[mentor_expertise_id],
+            e.[mentor_expertise],
+            e.[mentor_exp_cr_date],
+            e.[mentor_exp_update_date]
+        FROM 
+            [dbo].[mentor_expertise_dtls] e
+        WHERE 
+            e.[mentor_dtls_id] = m.[mentor_dtls_id]
+        FOR JSON PATH
+    ) AS expertise_list
+FROM 
+    [dbo].[users_dtls] u
+JOIN 
+    [dbo].[mentor_dtls] m
+ON 
+    u.[user_dtls_id] = m.[mentor_user_dtls_id]
+WHERE
+    m.[mentor_approved_status] = 'Yes' AND m.[mentor_guest_lectures_interest] = 'Yes' 
 `;
 // end of queries
 export const testQuery = `SELECT 

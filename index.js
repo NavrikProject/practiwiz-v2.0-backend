@@ -11,6 +11,9 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import authRouter from "./Routes/AuthRoutes/AuthRoutes.js";
 import mentorRouter from "./Routes/MentorRoutes/MentorRoutes.js";
+import mentorBookingRouter from "./Routes/MentorRoutes/MentorBookingRoute.js";
+import menteeRoute from "./Routes/MenteeRoutes/MenteeRoutes.js";
+import instituteRoute from "./Routes/InstituteRoutes/InstituteRoutes.js";
 import config from "./Config/dbConfig.js";
 dotenv.config();
 
@@ -90,11 +93,22 @@ app.get("/test/db-connection", async (req, res) => {
     });
   }
 });
+// razorpay key
+app.get("/api/get-razorpay-key", (req, res) => {
+  res.send({ key: process.env.RAZORPAY_KEY_ID });
+});
 // Authentication routes
 app.use("/api/v1/auth", authRouter);
 
 // Mentor routes
 app.use("/api/v1/mentor", mentorRouter);
+app.use("/api/v1/mentor/booking/appointment", mentorBookingRouter);
+
+// mentee routes
+app.use("/api/v1/mentee", menteeRoute);
+
+// institute routes
+app.use("/api/v1/institute", instituteRoute);
 
 async function connectToDatabases() {
   try {
