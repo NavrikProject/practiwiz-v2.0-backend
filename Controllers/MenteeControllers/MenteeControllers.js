@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { sendEmail } from "../../Middleware/AllFunctions.js";
 import moment from "moment";
 import { userDtlsQuery } from "../../SQLQueries/MentorSQLQueries.js";
+import { MenteeRegisterQuery } from "../../SQLQueries/MenteeSqlQueries.js";
 dotenv.config();
 
 // registering of the mentor application
@@ -62,7 +63,30 @@ export async function MenteeRegistration(req, res, next) {
           request.query(userDtlsQuery, (err, result) => {
             if (result && result.recordset && result.recordset.length > 0) {
               const userDtlsId = result.recordset[0].user_dtls_id;
-              return res.json({ success: userDtlsId });
+              request.input("menteeUserDtlsId", sql.Int, userDtlsId);
+              request.input("menteeAbout", sql.VarChar, mentee_About);
+              request.input("menteeSkills", sql.VarChar, mentee_Skills);
+              request.input("menteeGender", sql.VarChar, mentee_gender);
+              request.input("menteeType", sql.VarChar, mentee_type);
+              request.input(
+                "menteeProfilePic",
+                sql.VarChar,
+                "mentee profile pic"
+              );
+              request.input("menteeCrDate", sql.Date, timestamp);
+              request.input("menteeUpDate", sql.Date, timestamp);
+              request.query(MenteeRegisterQuery, (err, result) => {
+                if (err) {
+                  return res.json({
+                    error: "There is some error while registering",
+                  });
+                }
+                if (result) {
+                  return res.json({
+                    success: "You have successfully registered",
+                  });
+                }
+              });
             } else {
               return res.json({ error: "No record inserted or returned." });
             }
