@@ -6,7 +6,11 @@ import dotenv from "dotenv";
 import { sendEmail } from "../../Middleware/AllFunctions.js";
 import moment from "moment";
 import { userDtlsQuery } from "../../SQLQueries/MentorSQLQueries.js";
-import { MenteeRegisterQuery } from "../../SQLQueries/MenteeSqlQueries.js";
+import {
+  MenteeApprovedBookingQuery,
+  MenteeRegisterQuery,
+
+} from "../../SQLQueries/MenteeSqlQueries.js";
 dotenv.config();
 
 // registering of the mentor application
@@ -78,7 +82,7 @@ export async function MenteeRegistration(req, res, next) {
               request.query(MenteeRegisterQuery, (err, result) => {
                 if (err) {
                   return res.json({
-                    error: "There is some error while registering",
+                    error: err.message,
                   });
                 }
                 if (result) {
@@ -95,4 +99,25 @@ export async function MenteeRegistration(req, res, next) {
       }
     );
   });
+}
+
+// get mentor approved or not approved booking appointments using the userid
+
+export async function MenteeApprovedBookingAppointments(req, res) {
+  const { userDtlsId } = req.body;
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) return res.json({ error: "There is some error while fetching" });
+      const request = new sql.Request();
+      request.input("menteeUserDtlsId", sql.Int, userDtlsId);
+      request.query(MenteeApprovedBookingQuery, (err, result) => {
+        if (err) return res.json({ error: err.message });
+        if (result && result.recordset && result.recordset.length > 0) {
+          return res.json({ success: result.recordset });
+        }
+      });
+    });
+  } catch (error) {
+    return res.json({ error: "There is some error while fetching" });
+  }
 }

@@ -327,7 +327,7 @@ export const fetchSingleMentorQueryWithBookings = `SELECT
         FROM 
             [dbo].[mentor_booking_appointments_dtls] b
         WHERE 
-            b.[mentor_dtls_id] = m.[mentor_dtls_id] and b.[mentor_booking_confirmed] = 'Yes'
+            b.[mentor_dtls_id] = m.[mentor_dtls_id] and b.[mentor_booking_confirmed] = 'Yes' or b.[mentor_booking_confirmed] = 'No'
         FOR JSON PATH
     ) AS booking_dtls_list
 FROM 

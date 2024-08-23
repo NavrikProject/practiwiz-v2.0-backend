@@ -8,6 +8,7 @@ import {
   MentorBookingAppointmentQuery,
   MentorBookingOrderQuery,
 } from "../../SQLQueries/MentorSQLQueries.js";
+import { MentorApprovedBookingQuery, UpdateMentorBookingAppointmentQuery } from "../../SQLQueries/MentorBookingQueries.js";
 
 dotenv.config();
 
@@ -138,5 +139,47 @@ export async function createMentorBookingAppointment(req, res, next) {
     });
   } catch (error) {
     return res.send({ error: error.message });
+  }
+}
+
+// get the upcoming mentor appointments
+
+export async function MentorApprovedBookingAppointments(req, res) {
+  const { userDtlsId } = req.body;
+  console.log(userDtlsId);
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) return res.json({ error: "There is some error while fetching" });
+      const request = new sql.Request();
+      request.input("mentorUserDtlsId", sql.Int, userDtlsId);
+      request.query(MentorApprovedBookingQuery, (err, result) => {
+        if (err) return res.json({ error: err.message });
+        if (result && result.recordset && result.recordset.length > 0) {
+          return res.json({ success: result.recordset });
+        }
+      });
+    });
+  } catch (error) {
+    return res.json({ error: "There is some error while fetching" });
+  }
+}
+
+// update the mentor booking appointment
+export async function UpdateMentorBookingAppointment(req, res, next) {
+  const { bookingId } = req.body;
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) return res.json({ error: "There is some error while fetching" });
+      const request = new sql.Request();
+      request.input("bookingId", sql.Int, bookingId);
+      request.query(UpdateMentorBookingAppointmentQuery, (err, result) => {
+        if (err) return res.json({ error: err.message });
+        if (result) {
+          return res.json({ success: "Successfully updated the appointment" });
+        }
+      });
+    });
+  } catch (error) {
+    return res.json({ error: "There is some error while fetching" });
   }
 }
