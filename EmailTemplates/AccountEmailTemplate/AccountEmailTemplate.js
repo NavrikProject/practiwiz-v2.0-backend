@@ -1,14 +1,13 @@
-// mentor application email needd to pass mentor email and mentorname
-export const mentorApplicationEmail = (mentorEmail, mentorname) => {
+export const accountCreatedEmailTemplate = (email, username) => {
   return {
-    to: `${mentorEmail}`, // Change to your recipient
+    to: `${email}`, // Change to your recipient
     from: "no-reply@practiwiz.com", // Change to your verified sender
-    subject: "Thank you for your mentor application!",
+    subject: `Account created successfully`,
     html: `
-<section
+  <section
   style="
     font-family: 'Poppins', sans-serif;
-    background-color: #f4f8fb;
+    background-color: #e9f5ff;
     padding: 50px 0;
   "
 >
@@ -32,7 +31,7 @@ export const mentorApplicationEmail = (mentorEmail, mentorname) => {
         style="
           font-size: 24px;
           text-transform: uppercase;
-          color: #2c3e50;
+          color: #34495e;
           margin: 0;
         "
       >
@@ -43,22 +42,22 @@ export const mentorApplicationEmail = (mentorEmail, mentorname) => {
 
     <div style="text-align: center; margin-bottom: 30px;">
       <img
-        src="https://via.placeholder.com/600x200?text=Mentor+Application+Received"
-        alt="Mentor Application Received"
+        src="https://via.placeholder.com/600x200?text=Welcome+to+Practiwiz+Training+Program"
+        alt="Welcome Banner"
         style="max-width: 100%; border-radius: 10px;"
       />
     </div>
 
     <p style="font-size: 16px; line-height: 1.8; color: #555;">
-      Hi <b>${mentorname}</b>,
+      Hi <b>${username}</b>,
     </p>
 
     <p style="font-size: 16px; line-height: 1.8; color: #555;">
-      Thank you for submitting your mentor application to join the <b>Practiwiz</b> team. We’re excited about the possibility of working together to empower and guide our learners.
+      Congratulations! Your account has been successfully activated on <b>Practiwiz</b>.
     </p>
 
     <p style="font-size: 16px; line-height: 1.8; color: #555;">
-      While we review your application, we encourage you to explore our blog, where we share insights and experiences from our current mentors. It’s a great way to get familiar with our community and the impact we’re making.
+      You can now log in and explore our services whenever you like. We're thrilled to have you with us!
     </p>
 
     <div
@@ -68,7 +67,7 @@ export const mentorApplicationEmail = (mentorEmail, mentorname) => {
       "
     >
       <a
-        href="https://practiwiz.com/blog"
+        href="${url}"
         style="
           text-decoration: none;
           padding: 15px 40px;
@@ -79,19 +78,27 @@ export const mentorApplicationEmail = (mentorEmail, mentorname) => {
           display: inline-block;
           box-shadow: 0 5px 15px rgba(26, 188, 156, 0.3);
         "
-        >Explore Our Blog</a
+        >Log In Now</a
       >
     </div>
 
+    <div style="text-align: center; margin: 30px 0;">
+      <img
+        src="https://via.placeholder.com/600x200?text=Explore+Our+Services"
+        alt="Explore Services"
+        style="max-width: 100%; border-radius: 10px;"
+      />
+    </div>
+
     <p style="font-size: 16px; line-height: 1.8; color: #555;">
-      We will be in touch shortly with the next steps. Your expertise and passion for mentoring are highly valued, and we’re eager to see how you can contribute to the growth of our community.
+      We look forward to supporting your journey and helping you achieve your goals.
     </p>
 
     <p style="font-size: 16px; line-height: 1.8; color: #555;">
-      If you have any questions or need further information, feel free to contact us at 
+      If you have any questions, feel free to reach out to us at 
       <a href="mailto:wecare@practiwiz.com" style="color: #1abc9c; text-decoration: none;">
         wecare@practiwiz.com
-      </a>. We're here to assist you!
+      </a>. We're here to help!
     </p>
 
     <p style="font-size: 16px; line-height: 1.8; color: #555; margin-top: 40px;">

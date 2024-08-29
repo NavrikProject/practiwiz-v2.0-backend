@@ -9,12 +9,21 @@ import path from "path";
 import fileUpload from "express-fileupload";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
+import { google } from "googleapis";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { v4 as uuidv4 } from "uuid";
 import authRouter from "./Routes/AuthRoutes/AuthRoutes.js";
 import mentorRouter from "./Routes/MentorRoutes/MentorRoutes.js";
 import mentorBookingRouter from "./Routes/MentorRoutes/MentorBookingRoute.js";
 import menteeRoute from "./Routes/MenteeRoutes/MenteeRoutes.js";
 import instituteRoute from "./Routes/InstituteRoutes/InstituteRoutes.js";
+import mentorDashboardRouter from "./Routes/MentorRoutes/MentorDashboard.js";
 import config from "./Config/dbConfig.js";
+import {
+  readClientSecretBlobFromAzure,
+  readClientTokenBlobFromAzure,
+} from "./GoogleMeet/ReadTokens.js";
 dotenv.config();
 
 const app = express();
@@ -103,6 +112,7 @@ app.use("/api/v1/auth", authRouter);
 // Mentor routes
 app.use("/api/v1/mentor", mentorRouter);
 app.use("/api/v1/mentor/booking/appointment", mentorBookingRouter);
+app.use("/api/v1/mentor/dashboard", mentorDashboardRouter);
 
 // mentee routes
 app.use("/api/v1/mentee", menteeRoute);

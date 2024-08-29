@@ -2,6 +2,7 @@ import express from "express";
 import {
   createMentorBookingAppointment,
   createMentorRazorPayOrder,
+  GetMentorCompletedBookingSessions,
   MentorApprovedBookingAppointments,
   UpdateMentorBookingAppointment,
 } from "../../Controllers/MentorControllers/MentorBookingController.js";
@@ -13,5 +14,7 @@ router.post("/create-booking-appointment", createMentorBookingAppointment);
 router.post("/upcoming", MentorApprovedBookingAppointments);
 // updating the mentor appointment
 router.post("/update", UpdateMentorBookingAppointment);
+// mentor completed session in the dashboard
+router.post("/completed", GetMentorCompletedBookingSessions);
 
 export default router;

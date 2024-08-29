@@ -7,6 +7,7 @@ import {
 
 //login
 router.post("/login", login);
+
 router.post("/user/register", userRegistration);
 
 export default router;

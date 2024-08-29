@@ -452,7 +452,7 @@ export async function fetchAllMentorDetails(req, res) {
     });
   }
 }
-
+// getting the mentor details in Homepage
 export async function fetch10MentorInHome(req, res, next) {
   try {
     sql.connect(config, (err, db) => {

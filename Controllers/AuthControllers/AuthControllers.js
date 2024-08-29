@@ -11,8 +11,59 @@ import {
   userDtlsQuery,
 } from "../../SQLQueries/MentorSQLQueries.js";
 import { uploadMentorPhotoToAzure } from "../../Middleware/AllFunctions.js";
+import { mentorApplicationEmail } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
 dotenv.config();
 
+// user registration status table insert
+
+export async function UserRegistrationStatus(req, res) {
+  const { firstName, lastName, email, UserType, phoneNumber } = req.body;
+  const lowEmail = email.toLowerCase();
+  const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
+  try {
+    sql.connect(config, async (err) => {
+      if (err) {
+        return res.send({ error: "There is something wrong!" });
+      }
+      const request = new sql.Request();
+      request.input("email", sql.VarChar, lowEmail);
+      request.query(
+        "select user_reg_email from users_reg_dtls where user_email = @email",
+        (err, result) => {
+          if (err) return res.json({ error: "There is something wrong!" });
+          if (result.recordset.length > 0) {
+            return res.json({
+              error:
+                "This email address is already in use, Please use another email address",
+            });
+          } else {
+            const request = new sql.Request();
+            // Add input parameters
+            request.input("user_reg_email", sql.VarChar, email);
+            request.input("user_reg_firstname", sql.VarChar, firstName);
+            request.input("user_reg_lastname", sql.VarChar, lastName);
+            request.input("user_reg_phone_number", sql.VarChar, phoneNumber);
+            request.input("user_reg_type", sql.VarChar, UserType);
+            request.input("user_reg_logindate", sql.Date, timestamp);
+            // Execute the query
+            request.query(userDtlsQuery, (err, result) => {
+              if (err) {
+                return res.json({ error: err.message });
+              }
+              if (result) {
+                return res.json({ success: "success" });
+              }
+            });
+          }
+        }
+      );
+    });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
 // logging in to the portal
 export async function login(req, res) {
   let { email, password } = req.body;
@@ -80,7 +131,7 @@ export async function login(req, res) {
     });
   }
 }
-
+// mentor regist
 export async function userRegistration(req, res, next) {
   const {
     firstName,
@@ -335,6 +386,10 @@ export async function userRegistration(req, res, next) {
                       timestamp
                     );
                   }
+                  const msg = mentorApplicationEmail(
+                    email,
+                    firstName + " " + lastName
+                  );
                   return res.json({
                     success: "Thank you for applying the mentor application",
                   });

@@ -8,7 +8,19 @@ import {
   MentorBookingAppointmentQuery,
   MentorBookingOrderQuery,
 } from "../../SQLQueries/MentorSQLQueries.js";
-import { MentorApprovedBookingQuery, UpdateMentorBookingAppointmentQuery } from "../../SQLQueries/MentorBookingQueries.js";
+import {
+  FetchMentorBookingAppointmentQuery,
+  MentorApprovedBookingQuery,
+  MentorCompletedSessionsBookingQuery,
+  UpdateMentorBookingAppointmentQuery,
+} from "../../SQLQueries/MentorBookingQueries.js";
+import { createZoomMeeting } from "../../Middleware/ZoomLinkGeneration.js";
+import {
+  convertISTtoUTC,
+  extractDateFromISOString,
+} from "../../Middleware/DateFunction.js";
+import { appointmentBookedTraineeEmailTemplate } from "../../EmailTemplates/MentorEmailTemplate/MentorBookingEmailTemplate.js";
+import { sendEmail } from "../../Middleware/AllFunctions.js";
 
 dotenv.config();
 
@@ -171,11 +183,90 @@ export async function UpdateMentorBookingAppointment(req, res, next) {
     sql.connect(config, (err, db) => {
       if (err) return res.json({ error: "There is some error while fetching" });
       const request = new sql.Request();
-      request.input("bookingId", sql.Int, bookingId);
-      request.query(UpdateMentorBookingAppointmentQuery, (err, result) => {
+      request.input("UnapprovedBookingId", sql.Int, bookingId);
+      request.query(FetchMentorBookingAppointmentQuery, async (err, result) => {
         if (err) return res.json({ error: err.message });
-        if (result) {
-          return res.json({ success: "Successfully updated the appointment" });
+        if (result.recordset.length > 0) {
+          const menteeEmail = result.recordset[0].mentee_email;
+          const menteeName =
+            result.recordset[0].mentee_firstname +
+            " " +
+            result.recordset[0].mentee_lastname;
+          const mentorEmail = result.recordset[0].mentor_email;
+          const mentorName =
+            result.recordset[0].mentor_firstname +
+            " " +
+            result.recordset[0].mentor_lastname;
+          const slotTime = result.recordset[0].mentor_booking_time;
+          const mentorBookingStartsTime =
+            result.recordset[0].mentor_session_booking_date;
+          const time = result.recordset[0].mentor_booking_starts_time;
+          const updatedTime = time.replace(/([AP]M)/, " $1");
+          const startDate = extractDateFromISOString(mentorBookingStartsTime);
+          const MentorBookingTime = convertISTtoUTC(startDate, updatedTime);
+          const { hostURL, joinURL, meetingId, meetingPassword } =
+            await createZoomMeeting(MentorBookingTime, mentorName, menteeName);
+          const meetingIDt = meetingId.toString();
+          request.input("bookingId", sql.Int, bookingId);
+          request.input("joinURL1", sql.VarChar, joinURL);
+          request.input("joinURL2", sql.VarChar, joinURL);
+          request.input("hostURL", sql.VarChar, hostURL);
+          request.input("meetingID", sql.VarChar, meetingIDt);
+          request.input("meetingPassword", sql.VarChar, meetingPassword);
+          request.query(
+            UpdateMentorBookingAppointmentQuery,
+            async (err, result) => {
+              if (err) return res.json({ error: err.message });
+              if (result) {
+                const msg = appointmentBookedTraineeEmailTemplate(
+                  menteeEmail,
+                  menteeName,
+                  mentorName,
+                  new Date(mentorBookingStartsTime).toLocaleDateString(),
+                  slotTime,
+                  joinURL
+                );
+                const emailResponse = await sendEmail(msg);
+                if (
+                  emailResponse === "True" ||
+                  emailResponse === "true" ||
+                  emailResponse === true
+                ) {
+                  return res.json({
+                    success: "successfully updated the appointment",
+                  });
+                }
+                if (
+                  emailResponse === "False" ||
+                  emailResponse === "false" ||
+                  emailResponse === false
+                ) {
+                  return res.json({
+                    success: "successfully updated the appointment",
+                  });
+                }
+              }
+            }
+          );
+        }
+      });
+    });
+  } catch (error) {
+    return res.json({ error: "There is some error while fetching" });
+  }
+}
+// get mentor completed session in the dashboard
+export async function GetMentorCompletedBookingSessions(req, res, next) {
+  const { userDtlsId } = req.body;
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) return res.json({ error: "There is some error while fetching" });
+      const request = new sql.Request();
+      request.input("mentorUserDtlsId", sql.Int, userDtlsId);
+      request.query(MentorCompletedSessionsBookingQuery, (err, result) => {
+        if (err) return res.json({ error: err.message });
+        if (result && result.recordset && result.recordset.length > 0) {
+          return res.json({ success: result.recordset });
         }
       });
     });

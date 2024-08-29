@@ -14,6 +14,7 @@ export async function sendEmail(msg) {
     return successEmail;
   } catch (error) {
     console.error(error.message);
+    console.log("Email not sent");
     return errorEmail;
   }
 }
