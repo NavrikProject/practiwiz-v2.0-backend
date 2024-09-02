@@ -158,7 +158,6 @@ export async function createMentorBookingAppointment(req, res, next) {
 
 export async function MentorApprovedBookingAppointments(req, res) {
   const { userDtlsId } = req.body;
-  console.log(userDtlsId);
   try {
     sql.connect(config, (err, db) => {
       if (err) return res.json({ error: "There is some error while fetching" });

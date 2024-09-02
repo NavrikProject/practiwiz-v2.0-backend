@@ -19,11 +19,9 @@ import mentorBookingRouter from "./Routes/MentorRoutes/MentorBookingRoute.js";
 import menteeRoute from "./Routes/MenteeRoutes/MenteeRoutes.js";
 import instituteRoute from "./Routes/InstituteRoutes/InstituteRoutes.js";
 import mentorDashboardRouter from "./Routes/MentorRoutes/MentorDashboard.js";
+import adminDashboardRoute from "./Routes/AdminDashboard/AdminDashboardRoutes.js";
 import config from "./Config/dbConfig.js";
-import {
-  readClientSecretBlobFromAzure,
-  readClientTokenBlobFromAzure,
-} from "./GoogleMeet/ReadTokens.js";
+
 dotenv.config();
 
 const app = express();
@@ -119,6 +117,9 @@ app.use("/api/v1/mentee", menteeRoute);
 
 // institute routes
 app.use("/api/v1/institute", instituteRoute);
+
+// admin dashboard
+app.use("/api/v1/admin/dashboard", adminDashboardRoute);
 
 async function connectToDatabases() {
   try {

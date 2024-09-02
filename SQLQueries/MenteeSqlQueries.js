@@ -76,7 +76,7 @@ WHERE
     AND (mba.[mentor_booking_confirmed] = 'No' OR mba.[mentor_booking_confirmed] = 'Yes' AND mba.[mentor_session_status] = 'upcoming' AND mba.[trainee_session_status] = 'upcoming');
 
 `;
-
+// mentee completed booking queries with feedback
 export const MenteeCompletedBookingQuery = `SELECT 
     mba.[mentor_booking_appt_id],
     mba.[mentor_dtls_id],

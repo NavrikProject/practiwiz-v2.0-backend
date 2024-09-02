@@ -243,15 +243,13 @@ WHERE
     m.[mentor_approved_status] = 'Yes'
 `;
 
-// to fetch the booking details and timeslots and everything this is working right now
+// to fetch the booking details and timeslots feedbacks also and everything this is working right now
 export const fetchSingleMentorQueryWithBookings = `SELECT 
     u.[user_dtls_id],
     u.[user_email],
     u.[user_firstname],
     u.[user_lastname],
     u.[user_phone_number],
-    u.[user_type],
-    u.[user_is_superadmin],
     m.[mentor_dtls_id],
     m.[mentor_user_dtls_id],
     m.[mentor_email],
@@ -268,8 +266,6 @@ export const fetchSingleMentorQueryWithBookings = `SELECT
     m.[mentor_language],
     m.[mentor_timezone],
     m.[mentor_country],
-    m.[mentor_dtls_cr_date],
-    m.[mentor_dtls_update_date],
     m.[mentor_headline],
     m.[mentor_approved_status],
     m.[mentor_pricing],
@@ -316,30 +312,54 @@ export const fetchSingleMentorQueryWithBookings = `SELECT
     ) AS timeslot_list,
     (
         SELECT 
-        b.[mentor_dtls_id],
-        b.[mentor_session_booking_date],
-        b.[mentor_booked_date],
-        b.[mentor_booking_starts_time],
-        b.[mentor_booking_end_time],
-        b.[mentor_booking_time],
-        b.[mentor_booking_confirmed],
-        b.[mentor_session_status]
+            b.[mentor_dtls_id],
+            b.[mentor_session_booking_date],
+            b.[mentor_booked_date],
+            b.[mentor_booking_starts_time],
+            b.[mentor_booking_end_time],
+            b.[mentor_booking_time],
+            b.[mentor_booking_confirmed],
+            b.[mentor_session_status]
         FROM 
             [dbo].[mentor_booking_appointments_dtls] b
         WHERE 
-            b.[mentor_dtls_id] = m.[mentor_dtls_id] and b.[mentor_booking_confirmed] = 'Yes' or b.[mentor_booking_confirmed] = 'No'
+            b.[mentor_dtls_id] = m.[mentor_dtls_id]
         FOR JSON PATH
-    ) AS booking_dtls_list
+    ) AS booking_dtls_list,
+    ISNULL(
+        (SELECT COUNT(*) 
+         FROM [dbo].[mentor_feedback_dtls] f
+         WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]),
+        0
+    ) AS feedback_count,
+    (
+        SELECT 
+            f.[mentor_feedback_dtls_id],
+            f.[mentor_appt_booking_dtls_id],
+            f.[mentee_user_dtls_id],
+            f.[mentor_feedback_session_relevant],
+            f.[mentor_feedback_communication_skills],
+            f.[mentor_feedback_session_appropriate],
+            f.[mentor_feedback_detailed_fb],
+            f.[mentor_feedback_add_fb_sugg],
+            f.[mentor_feedback_another_session],
+            f.[mentor_feedback_session_overall_rating]
+        FROM 
+            [dbo].[mentor_feedback_dtls] f
+        WHERE 
+            f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]
+        FOR JSON PATH
+    ) AS feedback_details
 FROM 
     [dbo].[users_dtls] u
 JOIN 
     [dbo].[mentor_dtls] m
-ON 
-    u.[user_dtls_id] = m.[mentor_user_dtls_id]
+    ON u.[user_dtls_id] = m.[mentor_user_dtls_id]
 WHERE 
     u.[user_dtls_id] = @desired_mentor_dtls_id 
-AND
-    m.[mentor_approved_status] = 'Yes'
+AND 
+    m.[mentor_approved_status] = 'Yes';
+
 `;
 
 // Prepare the SQL query
@@ -422,39 +442,49 @@ export const MentorBookingAppointmentQuery = `
             )
         `;
 
-// fetch all mentor queries
+// fetch top 10 mentor queries in Home page
 export const fetch10MentorQuery = `SELECT TOP 10
     u.[user_dtls_id],
-    u.[user_email] as mentor_email,
-    u.[user_firstname] as mentor_firstname,
-    u.[user_lastname] as mentor_lastname,
+    u.[user_email] AS mentor_email,
+    u.[user_firstname] AS mentor_firstname,
+    u.[user_lastname] AS mentor_lastname,
     u.[user_type],
-    m.[mentor_dtls_id],
     m.[mentor_user_dtls_id],
     m.[mentor_profile_photo],
-    m.[mentor_social_media_profile],
     m.[mentor_job_title],
     m.[mentor_company_name],
-    m.[mentor_years_of_experience],
-    m.[mentor_academic_qualification],
-    m.[mentor_recommended_area_of_mentorship],
-    m.[mentor_guest_lectures_interest],
-    m.[mentor_curating_case_studies_interest],
-    m.[mentor_sessions_free_of_charge],
     m.[mentor_language],
-    m.[mentor_timezone],
     m.[mentor_country],
     m.[mentor_headline],
     m.[mentor_approved_status],
-    m.[mentor_pricing]
+    COUNT(mfd.[mentor_user_dtls_id]) AS feedback_count,
+    AVG(mfd.[mentor_feedback_session_overall_rating]) AS avg_feedback_rating
 FROM 
     [dbo].[users_dtls] u
-JOIN 
+LEFT JOIN 
     [dbo].[mentor_dtls] m
-ON 
-    u.[user_dtls_id] = m.[mentor_user_dtls_id]
+    ON u.[user_dtls_id] = m.[mentor_user_dtls_id]
+LEFT JOIN 
+    [dbo].[mentor_feedback_dtls] mfd
+    ON m.[mentor_user_dtls_id] = mfd.[mentor_user_dtls_id]
 WHERE
-    m.[mentor_approved_status] = 'Yes' 
+    m.[mentor_approved_status] = 'Yes'
+GROUP BY
+    u.[user_dtls_id],
+    u.[user_email],
+    u.[user_firstname],
+    u.[user_lastname],
+    u.[user_type],
+    m.[mentor_user_dtls_id],
+    m.[mentor_profile_photo],
+    m.[mentor_job_title],
+    m.[mentor_company_name],
+    m.[mentor_language],
+    m.[mentor_country],
+    m.[mentor_headline],
+    m.[mentor_approved_status]
+ORDER BY
+    feedback_count DESC;
 `;
 
 export const fetchGuestLecturesQuery = `SELECT
