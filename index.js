@@ -21,6 +21,7 @@ import instituteRoute from "./Routes/InstituteRoutes/InstituteRoutes.js";
 import mentorDashboardRouter from "./Routes/MentorRoutes/MentorDashboard.js";
 import adminDashboardRoute from "./Routes/AdminDashboard/AdminDashboardRoutes.js";
 import config from "./Config/dbConfig.js";
+import { InsertNotificationHandler } from "./Middleware/NotificationFunction.js";
 
 dotenv.config();
 

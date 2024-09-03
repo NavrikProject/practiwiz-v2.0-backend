@@ -84,10 +84,9 @@ export async function MentorRegistration(req, res, next) {
     request.query(
       "select user_email from users_dtls where user_email = @email",
       (err, result) => {
-        if (err)
-          return res.status(500).json({ error: "There is something wrong!" });
+        if (err) return res.json({ error: "There is something wrong!" });
         if (result.recordset.length > 0) {
-          return res.status(500).json({
+          return res.json({
             error:
               "This email address is already in use, Please use another email address",
           });
@@ -102,7 +101,7 @@ export async function MentorRegistration(req, res, next) {
           request.input("user_status", sql.VarChar, "1");
           request.input("user_modified_by", sql.VarChar, "Admin");
           request.input("user_type", sql.VarChar, UserType);
-          request.input("user_is_superadmin", sql.VarChar, "1");
+          request.input("user_is_superadmin", sql.VarChar, "0");
           request.input("user_logindate", sql.Date, timestamp);
           request.input("user_logintime", sql.Date, timestamp);
           request.input("user_token", sql.VarChar, "");

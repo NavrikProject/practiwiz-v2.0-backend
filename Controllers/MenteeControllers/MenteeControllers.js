@@ -62,7 +62,7 @@ export async function MenteeRegistration(req, res, next) {
           request.input("user_status", sql.VarChar, "1");
           request.input("user_modified_by", sql.VarChar, "Admin");
           request.input("user_type", sql.VarChar, userType);
-          request.input("user_is_superadmin", sql.VarChar, "1");
+          request.input("user_is_superadmin", sql.VarChar, "0");
           request.input("user_logindate", sql.Date, timestamp);
           request.input("user_logintime", sql.Date, timestamp);
           request.input("user_token", sql.VarChar, "");

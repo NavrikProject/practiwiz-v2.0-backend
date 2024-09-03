@@ -93,6 +93,14 @@ export async function login(req, res) {
                   });
                 }
                 if (response) {
+                  const accessToken = jwt.sign(
+                    {
+                      user_id: result.recordset[0].user_dtls_id,
+                      user_role: result.recordset[0].user_is_superadmin,
+                    },
+                    process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
+                    { expiresIn: "48h" }
+                  );
                   const token = jwt.sign(
                     {
                       user_id: result.recordset[0].user_dtls_id,
@@ -103,11 +111,12 @@ export async function login(req, res) {
                       user_role: result.recordset[0].user_is_superadmin,
                     },
                     process.env.JWT_LOGIN_SECRET_KEY,
-                    { expiresIn: "1m" }
+                    { expiresIn: "48h" }
                   );
                   return res.json({
                     success: true,
                     token: token,
+                    accessToken: accessToken,
                   });
                 } else {
                   return res.json({
@@ -213,7 +222,7 @@ export async function userRegistration(req, res, next) {
           request.input("user_status", sql.VarChar, "1");
           request.input("user_modified_by", sql.VarChar, "Admin");
           request.input("user_type", sql.VarChar, UserType);
-          request.input("user_is_superadmin", sql.VarChar, "1");
+          request.input("user_is_superadmin", sql.VarChar, "0");
           request.input("user_logindate", sql.Date, timestamp);
           request.input("user_logintime", sql.Date, timestamp);
           request.input("user_token", sql.VarChar, "");

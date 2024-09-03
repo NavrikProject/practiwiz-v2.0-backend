@@ -3,10 +3,9 @@ import jwt from "jsonwebtoken";
 import sql from "mssql";
 import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
-import Razorpay from "razorpay";
-import { fetchMentorSingleDashboard } from "../../SQLQueries/MentorSQLQueries.js";
 import {
   CheckBankDetailsExistsQuery,
+  fetchMentorSingleDashboardQuery,
   InsertBankDetailsQuery,
 } from "../../SQLQueries/MentorDashboard/MentorDashboardSqlQueries.js";
 import moment from "moment";
@@ -26,7 +25,7 @@ export async function fetchSingleDashboardMentorDetails(req, res) {
       if (db) {
         const request = new sql.Request();
         request.input("desired_mentor_dtls_id", sql.Int, userId);
-        request.query(fetchMentorSingleDashboard, (err, result) => {
+        request.query(fetchMentorSingleDashboardQuery, (err, result) => {
           if (err) {
             return res.json({
               error: err.message,
