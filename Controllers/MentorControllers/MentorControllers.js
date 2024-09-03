@@ -22,6 +22,7 @@ dotenv.config();
 
 // registering of the mentor application
 export async function MentorRegistration(req, res, next) {
+  console.log(req.body);
   const {
     firstName,
     lastName,
@@ -77,14 +78,14 @@ export async function MentorRegistration(req, res, next) {
 
   sql.connect(config, async (err) => {
     if (err) {
-      return res.send({ error: "There is something wrong!" });
+      return res.json({ error: err.message });
     }
     const request = new sql.Request();
     request.input("email", sql.VarChar, lowEmail);
     request.query(
       "select user_email from users_dtls where user_email = @email",
       (err, result) => {
-        if (err) return res.json({ error: "There is something wrong!" });
+        if (err) return res.json({ error: err.message });
         if (result.recordset.length > 0) {
           return res.json({
             error:
@@ -107,6 +108,9 @@ export async function MentorRegistration(req, res, next) {
           request.input("user_token", sql.VarChar, "");
           // Execute the query
           request.query(userDtlsQuery, (err, result) => {
+            if (err) {
+              return res.json({ error: err.message });
+            }
             if (result && result.recordset && result.recordset.length > 0) {
               const userDtlsId = result.recordset[0].user_dtls_id;
               // Add input parameters
@@ -180,9 +184,9 @@ export async function MentorRegistration(req, res, next) {
                         "')",
                       (err, success) => {
                         if (err) {
-                          return res.send(
-                            "There is something went wrong. Please try again later."
-                          );
+                          return res.json({
+                            error: err.message,
+                          });
                         }
                         if (success) {
                           console.log("Data inserted successfully" + word);
@@ -207,9 +211,9 @@ export async function MentorRegistration(req, res, next) {
                         "')",
                       (err, success) => {
                         if (err) {
-                          return res.send(
-                            "There is something went wrong. Please try again later."
-                          );
+                          return res.json({
+                            error: err.message,
+                          });
                         }
                         if (success) {
                           console.log(
