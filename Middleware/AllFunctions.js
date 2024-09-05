@@ -13,7 +13,8 @@ export async function sendEmail(msg) {
     console.log("Email sent");
     return successEmail;
   } catch (error) {
-    console.error(error.message);
+    console.log(error);
+    console.log(error.message);
     console.log("Email not sent");
     return errorEmail;
   }
@@ -33,6 +34,7 @@ export function uploadMentorPhotoToAzure(imageData, blobName) {
       console.log(response);
     })
     .catch((err) => {
+      console.log(err.messages);
       return res.send({
         error: "There was an error uploading",
       });

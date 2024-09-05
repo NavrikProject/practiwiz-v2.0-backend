@@ -136,6 +136,8 @@ export async function MenteeApprovedBookingAppointments(req, res) {
         if (err) return res.json({ error: err.message });
         if (result && result.recordset && result.recordset.length > 0) {
           return res.json({ success: result.recordset });
+        } else {
+          return res.json({ error: "No record found" });
         }
       });
     });
@@ -156,6 +158,8 @@ export async function MenteeCompletedBookingAppointments(req, res) {
         if (err) return res.json({ error: err.message });
         if (result && result.recordset && result.recordset.length > 0) {
           return res.json({ success: result.recordset });
+        } else {
+          return res.json({ error: "no bookings found" });
         }
       });
     });

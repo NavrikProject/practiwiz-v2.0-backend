@@ -22,6 +22,8 @@ import mentorDashboardRouter from "./Routes/MentorRoutes/MentorDashboard.js";
 import adminDashboardRoute from "./Routes/AdminDashboard/AdminDashboardRoutes.js";
 import config from "./Config/dbConfig.js";
 import { InsertNotificationHandler } from "./Middleware/NotificationFunction.js";
+import { accountCreatedEmailTemplate } from "./EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
+import { sendEmail } from "./Middleware/AllFunctions.js";
 
 dotenv.config();
 
@@ -139,8 +141,24 @@ async function connectToDatabases() {
 connectToDatabases();
 setInterval(() => {
   connectToDatabases();
-}, 360000);
+}, 3600000);
 
+app.get("/test/email", async (req, res) => {
+  const msg = accountCreatedEmailTemplate(
+    "keeprememberall@gmail.com",
+    "Mike",
+    "link"
+  );
+  try {
+    const emailRes = await sendEmail(msg);
+    return res.json({ success: true, message: emailRes });
+  } catch (error) {
+    return res.json({
+      message: "There was an error connecting to database",
+      error: err.message,
+    });
+  }
+});
 // Start the server
 app.listen(port, () => {
   console.log(`Running on port http://localhost:${port}`);

@@ -7,6 +7,8 @@ import {
   CheckBankDetailsExistsQuery,
   fetchMentorSingleDashboardQuery,
   InsertBankDetailsQuery,
+  MarkMentorAllMessagesAsReadQuery,
+  MarkMentorSingleMessageAsReadQuery,
 } from "../../SQLQueries/MentorDashboard/MentorDashboardSqlQueries.js";
 import moment from "moment";
 
@@ -125,6 +127,84 @@ export async function InsertBankDetails(req, res) {
                   success: "successfully inserted the bank details",
                 });
               }
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
+
+export async function MarkAllMessageAsRead(req, res) {
+  const { userId } = req.body;
+  const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: err.message,
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.input("mentorUserDtlsId", sql.Int, userId);
+        request.input("timestamp", sql.DateTime, timestamp);
+        request.query(MarkMentorAllMessagesAsReadQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: err.message,
+            });
+          }
+          if (result) {
+            return res.json({
+              success: "success",
+            });
+          } else {
+            return res.json({
+              error: "error",
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
+export async function MarkSingleMessageAsRead(req, res) {
+  const { userId, notificationId } = req.body;
+  const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: err.message,
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.input("mentorUserDtlsId", sql.Int, userId);
+        request.input("mentorNotificationId", sql.Int, notificationId);
+        request.input("timestamp", sql.DateTime, timestamp);
+        request.query(MarkMentorSingleMessageAsReadQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: err.message,
+            });
+          }
+          if (result) {
+            return res.json({
+              success: "success",
+            });
+          } else {
+            return res.json({
+              error: "error",
             });
           }
         });

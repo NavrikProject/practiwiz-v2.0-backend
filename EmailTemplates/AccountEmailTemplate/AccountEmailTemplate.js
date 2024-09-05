@@ -1,4 +1,4 @@
-export const accountCreatedEmailTemplate = (email, username) => {
+export const accountCreatedEmailTemplate = (email, username, url) => {
   return {
     to: `${email}`, // Change to your recipient
     from: "no-reply@practiwiz.com", // Change to your verified sender

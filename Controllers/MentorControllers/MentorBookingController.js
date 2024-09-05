@@ -167,6 +167,8 @@ export async function MentorApprovedBookingAppointments(req, res) {
         if (err) return res.json({ error: err.message });
         if (result && result.recordset && result.recordset.length > 0) {
           return res.json({ success: result.recordset });
+        } else {
+          return res.json({ error: "No approved bookings found" });
         }
       });
     });
@@ -266,6 +268,8 @@ export async function GetMentorCompletedBookingSessions(req, res, next) {
         if (err) return res.json({ error: err.message });
         if (result && result.recordset && result.recordset.length > 0) {
           return res.json({ success: result.recordset });
+        } else {
+          return res.json({ error: "No bookings found" });
         }
       });
     });

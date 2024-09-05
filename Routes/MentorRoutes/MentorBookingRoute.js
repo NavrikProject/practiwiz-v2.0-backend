@@ -11,6 +11,7 @@ const router = express.Router();
 
 router.post("/create-order", createMentorRazorPayOrder);
 router.post("/create-booking-appointment", createMentorBookingAppointment);
+// in the dashboard
 router.post("/upcoming", MentorApprovedBookingAppointments);
 // updating the mentor appointment
 router.post("/update", UpdateMentorBookingAppointment);

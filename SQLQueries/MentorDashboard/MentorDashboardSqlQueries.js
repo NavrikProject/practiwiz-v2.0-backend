@@ -107,6 +107,7 @@ export const fetchMentorSingleDashboardQuery = `SELECT
     ) AS timeslot_list,
     (
         SELECT 
+        n.[notification_dtls_id],
         n.[notification_user_dtls_id],
         n.[notification_type],
         n.[notification_heading],
@@ -146,4 +147,9 @@ ON
     u.[user_dtls_id] = m.[mentor_user_dtls_id]
 WHERE 
     u.[user_dtls_id] = @desired_mentor_dtls_id 
+`;
+
+export const MarkMentorAllMessagesAsReadQuery = `update notifications_dtls set notification_is_read = 1, notification_read_at =@timestamp where notification_user_dtls_id = @mentorUserDtlsId`;
+
+export const MarkMentorSingleMessageAsReadQuery = `update notifications_dtls set notification_is_read = 1, notification_read_at =@timestamp where notification_user_dtls_id = @mentorUserDtlsId and notification_dtls_id = @mentorNotificationId
 `;
