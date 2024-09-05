@@ -163,3 +163,7 @@ WHERE
 export const UpdateMentorToDisapproveQuery = `update mentor_dtls set mentor_approved_status = 'No' where mentor_dtls_id = @mentorUserDtls;
 `;
 export const UpdateMentorToApproveQuery = `update mentor_dtls set mentor_approved_status = 'Yes' where mentor_dtls_id = @mentorUserDtls`;
+
+export const fetchAllMentorUpcomingSessionsQuery = ``;
+export const fetchAllMentorCompletedSessionsQuery = ``;
+export const fetchAllMentorInCompletedSessionsQuery = ``;
