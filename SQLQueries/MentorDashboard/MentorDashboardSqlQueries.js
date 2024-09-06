@@ -138,7 +138,64 @@ export const fetchMentorSingleDashboardQuery = `SELECT
         WHERE 
             b.[mentor_dtls_id] = m.[mentor_dtls_id] and b.[mentor_booking_confirmed] = 'Yes' or b.[mentor_booking_confirmed] = 'No'
         FOR JSON PATH
-    ) AS booking_dtls_list
+    ) AS booking_dtls_list,
+     (
+    SELECT 
+        bank.[mentor_bank_dtls_id],
+        bank.[mentor_bank_user_dtls_id],
+        bank.[mentor_bank_mentor_dtls_id],
+        bank.[mentor_bank_account_holder_name]
+      ,bank.[mentor_bank_account_number]
+      ,bank.[mentor_bank_name]
+      ,bank.[mentor_bank_account_ifsc_code]
+      ,bank.[mentor_bank_branch]
+      ,bank.[mentor_bank_account_type]
+      ,bank.[mentor_bank_address]
+      ,bank.[mentor_bank_pan_number]
+      ,bank.[mentor_bank_swift_code]
+      ,bank.[mentor_bank_cr_date]
+    FROM [dbo].[mentor_bank_dtls] bank
+        WHERE 
+            u.[user_dtls_id] = bank.[mentor_bank_user_dtls_id] 
+        FOR JSON PATH
+    ) AS banking_dtls_list,
+    ISNULL(
+        (SELECT COUNT(*) 
+        FROM [dbo].[mentor_feedback_dtls] f
+        WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]),
+        0
+    ) AS feedback_count,
+    (
+        SELECT AVG(CAST(f.[mentor_feedback_session_overall_rating] AS FLOAT))
+        FROM [dbo].[mentor_feedback_dtls] f
+        WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]
+    ) AS avg_mentor_rating,
+    (
+        SELECT 
+            f.[mentor_feedback_dtls_id],
+            f.[mentor_appt_booking_dtls_id],
+            f.[mentee_user_dtls_id],
+            f.[mentor_feedback_detailed_fb],
+            f.[mentor_feedback_add_fb_sugg],
+            f.[mentor_feedback_session_overall_rating],
+            f.[mentor_feedback_dtls_cr_date],
+            mentee.[mentee_profile],
+            uma.[user_firstname] as mentee_firstname,
+            uma.[user_lastname] as mentee_lastname
+        FROM 
+            [dbo].[mentor_feedback_dtls] f
+        JOIN
+            [dbo].[mentee_dtls] mentee
+        ON
+            f.[mentee_user_dtls_id] = mentee.[mentee_user_dtls_id] 
+        JOIN 
+            [dbo].[users_dtls] uma
+        ON
+            f.[mentee_user_dtls_id] = uma.[user_dtls_id]
+        WHERE 
+            f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]
+        FOR JSON PATH
+    ) AS feedback_details
 FROM 
     [dbo].[users_dtls] u
 JOIN 
@@ -146,7 +203,7 @@ JOIN
 ON 
     u.[user_dtls_id] = m.[mentor_user_dtls_id]
 WHERE 
-    u.[user_dtls_id] = @desired_mentor_dtls_id 
+    u.[user_dtls_id] = @desired_mentor_dtls_id
 `;
 
 export const MarkMentorAllMessagesAsReadQuery = `update notifications_dtls set notification_is_read = 1, notification_read_at =@timestamp where notification_user_dtls_id = @mentorUserDtlsId`;
