@@ -80,41 +80,56 @@ WHERE
 and 
 mentor_booking_confirmed = 'No'`;
 
-export const MentorCompletedSessionsBookingQuery = ` SELECT 
+export const MentorCompletedSessionsBookingMenteeNameQuery = `
+SELECT 
     u.user_dtls_id,
-    u.user_firstname as mentor_firstname,
-    u.user_lastname as mentor_lastname,
-    u.user_phone_number,
-    u.user_type,
-    m.mentor_dtls_id,
     m.mentor_user_dtls_id,
-    m.mentor_email,
-    m.mentor_profile_photo,
     m.mentor_job_title,
     m.mentor_company_name,
-    m.mentor_country,
-    m.mentor_approved_status,
     mba.mentor_booking_appt_id,
-    mba.mentor_dtls_id AS booking_mentor_dtls_id,
     mba.mentee_user_dtls_id,
     mba.mentor_session_booking_date,
     mba.mentor_booking_time,
-    mba.mentor_options,
-    mba.mentor_questions,
-    mba.mentor_booking_confirmed,
-    mba.mentor_host_url,
-    mba.trainee_join_url,
-    mba.mentor_amount_paid_status,
     mba.mentor_session_status,
-    mba.mentor_rescheduled_times,
-    mba.trainee_session_status
+    mba.mentor_booking_confirmed,
+    mentee.mentee_profile,
+    mentee.mentee_type,
+    uma.user_firstname as mentee_firstname,
+    uma.user_lastname as mentee_lastname,
+    (
+        SELECT 
+            f.mentor_feedback_dtls_id,
+            f.mentor_appt_booking_dtls_id,
+            f.mentee_user_dtls_id,
+            f.mentor_feedback_detailed_fb,
+            f.mentor_feedback_add_fb_sugg,
+            f.mentor_feedback_session_overall_rating,
+            f.mentor_feedback_dtls_cr_date
+        FROM 
+            dbo.mentor_feedback_dtls f
+        WHERE 
+            f.mentor_user_dtls_id = m.mentor_user_dtls_id
+        AND 
+            f.mentor_appt_booking_dtls_id = mba.mentor_booking_appt_id
+        FOR JSON PATH
+    ) AS feedback_details
 FROM 
     dbo.users_dtls u
 INNER JOIN 
     dbo.mentor_dtls m ON u.user_dtls_id = m.mentor_user_dtls_id
 INNER JOIN 
     dbo.mentor_booking_appointments_dtls mba ON m.mentor_dtls_id = mba.mentor_dtls_id
+INNER JOIN 
+    dbo.mentee_dtls mentee ON mba.mentee_user_dtls_id = mentee.mentee_user_dtls_id
+INNER JOIN 
+    dbo.users_dtls uma ON mba.mentee_user_dtls_id = uma.user_dtls_id
 WHERE 
     u.user_dtls_id = @mentorUserDtlsId
-    AND (mba.[mentor_booking_confirmed] = 'Yes' and mba.[mentor_session_status] = 'completed' AND mba.[trainee_session_status] = 'completed');
+AND 
+    mba.mentor_booking_confirmed = 'Yes'
+AND 
+    mba.mentor_session_status = 'completed'
+AND 
+    mba.trainee_session_status = 'completed';
+
 `;

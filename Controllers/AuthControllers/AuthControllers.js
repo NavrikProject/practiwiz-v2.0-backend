@@ -7,11 +7,20 @@ import moment from "moment";
 
 import {
   mentorDtlsQuery,
-  mentorExpertiseQuery,
   userDtlsQuery,
 } from "../../SQLQueries/MentorSQLQueries.js";
-import { uploadMentorPhotoToAzure } from "../../Middleware/AllFunctions.js";
+import {
+  sendEmail,
+  uploadMentorPhotoToAzure,
+} from "../../Middleware/AllFunctions.js";
 import { mentorApplicationEmail } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
+import { passwordUpdateEmailTemplate } from "../../EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
+import { InsertNotificationHandler } from "../../Middleware/NotificationFunction.js";
+import {
+  InfoMsg,
+  PasswordChangedHeading,
+  PasswordChangedMessage,
+} from "../../Messages/Messages.js";
 dotenv.config();
 
 // user registration status table insert
@@ -467,5 +476,92 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
     });
   } catch (error) {
     console.log(error.message);
+  }
+}
+
+export async function changeUserPassword(req, res, next) {
+  const { password, userId } = req.body;
+  const saltRounds = await bcrypt.genSalt(12);
+  console.log(saltRounds);
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  console.log(hashedPassword);
+  try {
+    sql.connect(config, async (err) => {
+      if (err)
+        return res.json({
+          error: "There is something went wrong. Please try again later.",
+        });
+      const request = new sql.Request();
+      request.input("id", sql.Int, userId);
+      request.query(
+        "select user_dtls_id from users_dtls where user_dtls_id = @id",
+        (err, result) => {
+          if (err) {
+            return res.json({ error: err.message });
+          }
+          if (result.recordset.length > 0) {
+            const email = result.recordset[0].user_email;
+            const username =
+              result.recordset[0].user_firstname +
+              " " +
+              result.recordset[0].user_lastname;
+            sql.connect(config, async (err) => {
+              if (err) return res.send(err.message);
+              const request = new sql.Request();
+              request.input("id", sql.Int, userId);
+              request.input("password", sql.VarChar, hashedPassword);
+              request.query(
+                "update users_dtls set user_pwd= @password where user_dtls_id= @id",
+                async (err, response) => {
+                  if (err)
+                    return res.send(
+                      "There is something went wrong. Please try again later."
+                    );
+                  if (response) {
+                    const msg = passwordUpdateEmailTemplate(email, username);
+                    const notificationHandler = InsertNotificationHandler(
+                      userId,
+                      InfoMsg,
+                      PasswordChangedHeading,
+                      PasswordChangedMessage
+                    );
+                    const emailResponse = await sendEmail(msg);
+                    if (
+                      emailResponse === "True" ||
+                      emailResponse === "true" ||
+                      emailResponse === true
+                    ) {
+                      return res.json({
+                        success: "successfully",
+                      });
+                    }
+                    if (
+                      emailResponse === "False" ||
+                      emailResponse === "false" ||
+                      emailResponse === false
+                    ) {
+                      return res.json({
+                        success: "successfully",
+                      });
+                    }
+                  } else {
+                    res.send({
+                      error: "There was an error updating the password",
+                    });
+                  }
+                }
+              );
+            });
+          } else {
+            return res.json({
+              error:
+                "There is no account with this email address. Please sign up!",
+            });
+          }
+        }
+      );
+    });
+  } catch (error) {
+    return res.send("There is something went wrong. Please try again later.");
   }
 }

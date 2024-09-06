@@ -118,3 +118,57 @@ export const accountCreatedEmailTemplate = (email, username, url) => {
     `,
   };
 };
+
+export const passwordUpdateEmailTemplate = (email, username) => {
+  return {
+    to: `${email}`, // Change to your recipient
+    from: "no-reply@practiwiz.com", // Change to your verified sender
+    subject: `Password changed successfully`,
+    html: `
+<section>
+      <div
+        style="
+          font-size: 19px;
+          font-family: poppins;
+          max-width: 700px;
+          margin: auto;
+          padding: 50px 20px;
+        "
+      >
+        <h2
+          style="
+            text-transform: uppercase;
+            color: teal;
+            text-align: center;
+            padding-bottom: 30px;
+          "
+        >
+          Welcome to the Practiwiz Training Programme
+        </h2>
+        <p>Hi <b>${username}</b>,</p>
+        <p>
+          Just a quick note to let you know that your password has been changed
+          to the new password you requested.
+        </p>
+        <p>
+          If you have any questions or are experiencing any difficulties logging
+          in, please reach out to our customer service team directly at
+          <b>(120) 3569310</b>.
+        </p>
+        <p>We look forward to seeing your progress with our service!</p>
+        <p>
+          If you have any questions or would like us to help you with anything
+          else, please don't hesitate to reach out <b>support@practiwiz.com</b>.
+        </p>
+        <p>Thanks, Practiwiz</p>
+        <img
+          width="300px"
+          height="100px"
+          src="https://res.cloudinary.com/droa7dncb/image/upload/v1665987569/practiwiz-logo3_xifxbc.png"
+          alt="Logo"
+        />
+      </div>
+    </section>
+    `,
+  };
+};

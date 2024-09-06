@@ -11,9 +11,9 @@ import {
 import {
   FetchMentorBookingAppointmentQuery,
   MentorApprovedBookingQuery,
-  MentorCompletedSessionsBookingQuery,
+  MentorCompletedSessionsBookingMenteeNameQuery,
   UpdateMentorBookingAppointmentQuery,
-} from "../../SQLQueries/MentorBookingQueries.js";
+} from "../../SQLQueries/MentorDashboard/MentorBookingQueries.js";
 import { createZoomMeeting } from "../../Middleware/ZoomLinkGeneration.js";
 import {
   convertISTtoUTC,
@@ -228,24 +228,7 @@ export async function UpdateMentorBookingAppointment(req, res, next) {
                   joinURL
                 );
                 const emailResponse = await sendEmail(msg);
-                if (
-                  emailResponse === "True" ||
-                  emailResponse === "true" ||
-                  emailResponse === true
-                ) {
-                  return res.json({
-                    success: "successfully updated the appointment",
-                  });
-                }
-                if (
-                  emailResponse === "False" ||
-                  emailResponse === "false" ||
-                  emailResponse === false
-                ) {
-                  return res.json({
-                    success: "successfully updated the appointment",
-                  });
-                }
+               c
               }
             }
           );
@@ -264,14 +247,17 @@ export async function GetMentorCompletedBookingSessions(req, res, next) {
       if (err) return res.json({ error: "There is some error while fetching" });
       const request = new sql.Request();
       request.input("mentorUserDtlsId", sql.Int, userDtlsId);
-      request.query(MentorCompletedSessionsBookingQuery, (err, result) => {
-        if (err) return res.json({ error: err.message });
-        if (result && result.recordset && result.recordset.length > 0) {
-          return res.json({ success: result.recordset });
-        } else {
-          return res.json({ error: "No bookings found" });
+      request.query(
+        MentorCompletedSessionsBookingMenteeNameQuery,
+        (err, result) => {
+          if (err) return res.json({ error: err.message });
+          if (result && result.recordset && result.recordset.length > 0) {
+            return res.json({ success: result.recordset });
+          } else {
+            return res.json({ error: "No bookings found" });
+          }
         }
-      });
+      );
     });
   } catch (error) {
     return res.json({ error: "There is some error while fetching" });

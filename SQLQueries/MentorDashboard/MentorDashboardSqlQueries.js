@@ -210,3 +210,26 @@ export const MarkMentorAllMessagesAsReadQuery = `update notifications_dtls set n
 
 export const MarkMentorSingleMessageAsReadQuery = `update notifications_dtls set notification_is_read = 1, notification_read_at =@timestamp where notification_user_dtls_id = @mentorUserDtlsId and notification_dtls_id = @mentorNotificationId
 `;
+
+//showing the mentor completed session in the mentor dashboard completed page
+export const MentorCompletedSessionsBookingQuery = ` SELECT 
+    u.user_dtls_id,
+    u.user_firstname as mentee_firstname,
+    u.user_lastname as mentee_lastname,
+    m.mentor_user_dtls_id,
+    m.mentor_job_title,
+    m.mentor_company_name,
+    mba.mentor_booking_appt_id,
+    mba.mentee_user_dtls_id,
+    mba.mentor_session_booking_date,
+    mba.mentor_booking_time
+FROM 
+    dbo.users_dtls u
+INNER JOIN 
+    dbo.mentor_dtls m ON u.user_dtls_id = m.mentor_user_dtls_id
+INNER JOIN 
+    dbo.mentor_booking_appointments_dtls mba ON m.mentor_dtls_id = mba.mentor_dtls_id
+WHERE 
+    u.user_dtls_id = @mentorUserDtlsId
+    AND (mba.[mentor_booking_confirmed] = 'Yes' and mba.[mentor_session_status] = 'completed' AND mba.[trainee_session_status] = 'completed');
+`;
