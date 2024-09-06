@@ -3,6 +3,9 @@ import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
 import {
   fetchAllApprovedMentorQuery,
+  fetchAllMentorCompletedSessionsQuery,
+  fetchAllMentorInCompletedSessionsQuery,
+  fetchAllMentorUpcomingSessionsQuery,
   fetchAllNotApprovedMentorQuery,
   UpdateMentorToApproveQuery,
   UpdateMentorToDisapproveQuery,
@@ -185,6 +188,113 @@ export async function UpdateMentorToApprove(req, res) {
           } else {
             return res.json({
               error: "mentor is not approved yet",
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
+
+// getting all the mentor booking session
+
+export async function getAllMentorUpcomingAdminDashboard(req, res, next) {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: err.message,
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.query(fetchAllMentorUpcomingSessionsQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: err.message,
+            });
+          }
+          if (result.recordset.length > 0) {
+            return res.json({
+              success: result.recordset,
+            });
+          } else {
+            return res.json({
+              error: "",
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
+
+export async function getAllMentorCompletedAdminDashboard(req, res, next) {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: err.message,
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.query(fetchAllMentorCompletedSessionsQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: err.message,
+            });
+          }
+          if (result.recordset.length > 0) {
+            return res.json({
+              success: result.recordset,
+            });
+          } else {
+            return res.json({
+              error: "mentor is not approved yet",
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
+
+export async function getAllMentorInCompletedAdminDashboard(req, res, next) {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: err.message,
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.query(fetchAllMentorInCompletedSessionsQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: err.message,
+            });
+          }
+          if (result.recordset.length > 0) {
+            return res.json({
+              success: result.recordset,
+            });
+          } else {
+            return res.json({
+              error: "",
             });
           }
         });

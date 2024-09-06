@@ -328,8 +328,8 @@ export const fetchSingleMentorQueryWithBookings = `SELECT
     ) AS booking_dtls_list,
     ISNULL(
         (SELECT COUNT(*) 
-         FROM [dbo].[mentor_feedback_dtls] f
-         WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]),
+        FROM [dbo].[mentor_feedback_dtls] f
+        WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]),
         0
     ) AS feedback_count,
     (
@@ -362,6 +362,135 @@ AND
 
 `;
 
+export const fetchSingleMentorProfileForPublicQuery = `SELECT 
+    u.[user_dtls_id],
+    u.[user_email],
+    u.[user_firstname],
+    u.[user_lastname],
+    u.[user_phone_number],
+    m.[mentor_dtls_id],
+    m.[mentor_user_dtls_id],
+    m.[mentor_email],
+    m.[mentor_profile_photo],
+    m.[mentor_social_media_profile],
+    m.[mentor_job_title],
+    m.[mentor_company_name],
+    m.[mentor_years_of_experience],
+    m.[mentor_academic_qualification],
+    m.[mentor_recommended_area_of_mentorship],
+    m.[mentor_guest_lectures_interest],
+    m.[mentor_curating_case_studies_interest],
+    m.[mentor_sessions_free_of_charge],
+    m.[mentor_language],
+    m.[mentor_timezone],
+    m.[mentor_country],
+    m.[mentor_headline],
+    m.[mentor_approved_status],
+    m.[mentor_pricing],
+    (
+        SELECT 
+            e.[mentor_expertise_id],
+            e.[mentor_expertise],
+            e.[mentor_exp_cr_date],
+            e.[mentor_exp_update_date]
+        FROM 
+            [dbo].[mentor_expertise_dtls] e
+        WHERE 
+            e.[mentor_dtls_id] = m.[mentor_dtls_id]
+        FOR JSON PATH
+    ) AS expertise_list,
+    (
+        SELECT 
+            p.[mentor_passion_id],
+            p.[mentor_passion],
+            p.[mentor_passion_cr_date],
+            p.[mentor_passion_update_date]
+        FROM 
+            [dbo].[mentor_passion_dtls] p
+        WHERE 
+            p.[mentor_dtls_id] = m.[mentor_dtls_id]
+        FOR JSON PATH
+    ) AS passion_list,
+    (
+        SELECT 
+            t.[mentor_timeslot_id],
+            t.[mentor_dtls_id],
+            t.[mentor_timeslot_day],
+            t.[mentor_timeslot_from],
+            t.[mentor_timeslot_to],
+            t.[mentor_timeslot_rec_indicator],
+            t.[mentor_timeslot_rec_end_timeframe],
+            t.[mentor_timeslot_rec_cr_date],
+            t.[mentor_timeslot_booking_status]
+        FROM 
+            [dbo].[mentor_timeslots_dtls] t
+        WHERE 
+            t.[mentor_dtls_id] = m.[mentor_dtls_id]
+        FOR JSON PATH
+    ) AS timeslot_list,
+    (
+        SELECT 
+            b.[mentor_dtls_id],
+            b.[mentor_session_booking_date],
+            b.[mentor_booked_date],
+            b.[mentor_booking_starts_time],
+            b.[mentor_booking_end_time],
+            b.[mentor_booking_time],
+            b.[mentor_booking_confirmed],
+            b.[mentor_session_status]
+        FROM 
+            [dbo].[mentor_booking_appointments_dtls] b
+        WHERE 
+            b.[mentor_dtls_id] = m.[mentor_dtls_id]
+        FOR JSON PATH
+    ) AS booking_dtls_list,
+    ISNULL(
+        (SELECT COUNT(*) 
+        FROM [dbo].[mentor_feedback_dtls] f
+        WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]),
+        0
+    ) AS feedback_count,
+    (
+        SELECT 
+            f.[mentor_feedback_dtls_id],
+            f.[mentor_appt_booking_dtls_id],
+            f.[mentee_user_dtls_id],
+            f.[mentor_feedback_detailed_fb],
+            f.[mentor_feedback_add_fb_sugg],
+            f.[mentor_feedback_session_overall_rating],
+            f.[mentor_feedback_dtls_cr_date],
+            mentee.[mentee_profile],
+            uma.[user_firstname] as mentee_firstname,
+            uma.[user_lastname] as mentee_lastname
+        FROM 
+            [dbo].[mentor_feedback_dtls] f
+        JOIN
+            [dbo].[mentee_dtls] mentee
+        ON
+            f.[mentee_user_dtls_id] = mentee.[mentee_user_dtls_id] 
+        JOIN 
+            [dbo].[users_dtls] uma
+        ON
+            f.[mentee_user_dtls_id] = uma.[user_dtls_id]
+        WHERE 
+            f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]
+        FOR JSON PATH
+    ) AS feedback_details,
+    (
+        SELECT AVG(CAST(f.[mentor_feedback_session_overall_rating] AS FLOAT))
+        FROM [dbo].[mentor_feedback_dtls] f
+        WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]
+    ) AS avg_mentor_rating
+FROM 
+    [dbo].[users_dtls] u
+JOIN 
+    [dbo].[mentor_dtls] m
+    ON u.[user_dtls_id] = m.[mentor_user_dtls_id]
+WHERE 
+    u.[user_dtls_id] = @desired_mentor_dtls_id
+AND 
+    m.[mentor_approved_status] = 'Yes';
+`;
 // Prepare the SQL query
 export const MentorBookingOrderQuery = `
             INSERT INTO [dbo].[mentor_bookings_raz_order_dtls] 

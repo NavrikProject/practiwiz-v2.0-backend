@@ -164,6 +164,128 @@ export const UpdateMentorToDisapproveQuery = `update mentor_dtls set mentor_appr
 `;
 export const UpdateMentorToApproveQuery = `update mentor_dtls set mentor_approved_status = 'Yes' where mentor_dtls_id = @mentorUserDtls`;
 
-export const fetchAllMentorUpcomingSessionsQuery = ``;
-export const fetchAllMentorCompletedSessionsQuery = ``;
-export const fetchAllMentorInCompletedSessionsQuery = ``;
+export const fetchAllMentorUpcomingSessionsQuery = `SELECT 
+    mba.[mentor_booking_appt_id],
+    mba.[mentor_dtls_id],
+    mba.[mentee_user_dtls_id],
+    mba.[mentor_session_booking_date],
+    mba.[mentor_session_status],
+    mba.[trainee_session_status],
+    mba.[mentor_booking_time],
+    mba.[mentor_booking_confirmed],
+    mba.[practy_team_host_url],
+    mentee.[user_email] AS mentee_email,
+    mentee.[user_firstname] AS mentee_firstname,
+    mentee.[user_lastname] AS mentee_lastname,
+    mentee.[user_phone_number] AS mentee_phone_number,
+    mentor.[user_email] AS mentor_email,
+    mentor.[user_firstname] AS mentor_firstname,
+    mentor.[user_lastname] AS mentor_lastname,
+    mentor.[user_phone_number] AS mentor_phone_number,
+    mentor.[user_dtls_id] AS mentor_dtls_id
+FROM 
+    [dbo].[mentor_booking_appointments_dtls] mba
+JOIN 
+    [dbo].[users_dtls] mentee 
+ON 
+    mba.[mentee_user_dtls_id] = mentee.[user_dtls_id]
+JOIN 
+    [dbo].[mentor_dtls] md 
+ON 
+    mba.[mentor_dtls_id] = md.[mentor_dtls_id]
+JOIN 
+    [dbo].[users_dtls] mentor
+ON 
+    md.[mentor_user_dtls_id] = mentor.[user_dtls_id]
+where 
+    mba.[mentor_session_status] = 'upcoming' and mba.[trainee_session_status] = 'upcoming' and mba.[mentor_session_booking_date] >= CAST(GETDATE() AS DATE);`;
+
+export const fetchAllMentorCompletedSessionsQuery = `
+SELECT 
+    mba.[mentor_booking_appt_id],
+    mba.[mentor_dtls_id],
+    mba.[mentee_user_dtls_id],
+    mba.[mentor_session_booking_date],
+    mba.[mentor_booking_time],
+    mba.[mentor_booking_confirmed],
+    mba.[practy_team_host_url],
+    mba.[mentor_session_status],
+    mentee.[user_email] AS mentee_email,
+    mentee.[user_firstname] AS mentee_firstname,
+    mentee.[user_lastname] AS mentee_lastname,
+    mentee.[user_phone_number] AS mentee_phone_number,
+    mentor.[user_email] AS mentor_email,
+    mentor.[user_firstname] AS mentor_firstname,
+    mentor.[user_lastname] AS mentor_lastname,
+    mentor.[user_phone_number] AS mentor_phone_number,
+    feedback.[mentor_appt_booking_dtls_id],
+    feedback.[mentor_feedback_session_overall_rating],
+    feedback.[mentor_feedback_session_platform_rating],
+    feedback.[mentor_feedback_dtls_cr_date],
+    mentee1.[mentee_profile],
+    mentee1.[mentee_dtls_id]
+FROM 
+    [dbo].[mentor_booking_appointments_dtls] mba
+JOIN 
+    [dbo].[users_dtls] mentee 
+ON 
+    mba.[mentee_user_dtls_id] = mentee.[user_dtls_id]
+JOIN 
+    [dbo].[mentor_dtls] md 
+ON 
+    mba.[mentor_dtls_id] = md.[mentor_dtls_id]
+JOIN 
+    [dbo].[users_dtls] mentor
+ON 
+    md.[mentor_user_dtls_id] = mentor.[user_dtls_id]
+JOIN 
+    [dbo].[mentee_dtls] mentee1 
+ON 
+    mba.[mentee_user_dtls_id] = mentee1.[mentee_user_dtls_id]
+LEFT JOIN 
+    [dbo].[mentor_feedback_dtls] feedback
+ON
+    mba.[mentor_booking_appt_id] = feedback.[mentor_appt_booking_dtls_id]
+WHERE 
+    mba.[mentor_session_status] = 'completed' 
+    AND mba.[trainee_session_status] = 'completed' 
+    AND mba.[mentor_session_booking_date] < CAST(GETDATE() AS DATE);
+`;
+
+export const fetchAllMentorInCompletedSessionsQuery = `
+SELECT 
+    mba.[mentor_booking_appt_id],
+    mba.[mentor_dtls_id],
+    mba.[mentee_user_dtls_id],
+    mba.[mentor_session_booking_date],
+    mba.[mentor_session_status],
+    mba.[trainee_session_status],
+    mba.[mentor_booking_time],
+    mba.[mentor_booking_confirmed],
+    mba.[practy_team_host_url],
+    mentee.[user_email] AS mentee_email,
+    mentee.[user_firstname] AS mentee_firstname,
+    mentee.[user_lastname] AS mentee_lastname,
+    mentee.[user_phone_number] AS mentee_phone_number,
+    mentor.[user_email] AS mentor_email,
+    mentor.[user_firstname] AS mentor_firstname,
+    mentor.[user_lastname] AS mentor_lastname,
+    mentor.[user_phone_number] AS mentor_phone_number,
+    mentor.[user_dtls_id] AS mentor_dtls_id
+FROM 
+    [dbo].[mentor_booking_appointments_dtls] mba
+JOIN 
+    [dbo].[users_dtls] mentee 
+ON 
+    mba.[mentee_user_dtls_id] = mentee.[user_dtls_id]
+JOIN 
+    [dbo].[mentor_dtls] md 
+ON 
+    mba.[mentor_dtls_id] = md.[mentor_dtls_id]
+JOIN 
+    [dbo].[users_dtls] mentor
+ON 
+    md.[mentor_user_dtls_id] = mentor.[user_dtls_id]
+where 
+    mba.[mentor_session_status] = 'upcoming' and mba.[trainee_session_status] = 'upcoming' and mba.[mentor_session_booking_date] < CAST(GETDATE() AS DATE);
+`;

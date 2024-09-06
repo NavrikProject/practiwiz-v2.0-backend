@@ -1,6 +1,9 @@
 import routers from "express";
 import {
   getAllApprovedMentorsListAdminDashboard,
+  getAllMentorCompletedAdminDashboard,
+  getAllMentorInCompletedAdminDashboard,
+  getAllMentorUpcomingAdminDashboard,
   getAllNotApprovedMentorsListAdminDashboard,
   getAllUsersListAdminDashboard,
   UpdateMentorToApprove,
@@ -31,4 +34,21 @@ router.get(
 router.post("/mentors/update/not-approve", UpdateMentorToDisapprove);
 router.post("/mentors/update/approve", UpdateMentorToApprove);
 
+// getting the mentor booking session
+router.get(
+  "/mentors/booking/upcoming-session-lists",
+  verifyAdminTokenAndAuthorization,
+  getAllMentorUpcomingAdminDashboard
+);
+
+router.get(
+  "/mentors/booking/completed-session-lists",
+  verifyAdminTokenAndAuthorization,
+  getAllMentorCompletedAdminDashboard
+);
+router.get(
+  "/mentors/booking/in-completed-session-lists",
+  verifyAdminTokenAndAuthorization,
+  getAllMentorInCompletedAdminDashboard
+);
 export default router;

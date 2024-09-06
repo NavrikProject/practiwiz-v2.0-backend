@@ -11,6 +11,7 @@ import moment from "moment";
 import {
   fetch10MentorQuery,
   fetchAllMentorQuery,
+  fetchSingleMentorProfileForPublicQuery,
   fetchSingleMentorQuery,
   fetchSingleMentorQueryWithBookings,
   mentorDtlsQuery,
@@ -18,6 +19,7 @@ import {
   userDtlsQuery,
 } from "../../SQLQueries/MentorSQLQueries.js";
 import { mentorApplicationEmail } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
+import { ShowTop10MentorsInHomeQuery } from "../../SQLQueries/Mentor/MentorSQLQueries.js";
 dotenv.config();
 
 // registering of the mentor application
@@ -396,7 +398,7 @@ export async function fetchSingleMentorDetails(req, res) {
       if (db) {
         const request = new sql.Request();
         request.input("desired_mentor_dtls_id", sql.Int, userId);
-        request.query(fetchSingleMentorQueryWithBookings, (err, result) => {
+        request.query(fetchSingleMentorProfileForPublicQuery, (err, result) => {
           if (err) {
             return res.json({
               error: err.message,
@@ -466,7 +468,7 @@ export async function fetch10MentorInHome(req, res, next) {
       }
       if (db) {
         const request = new sql.Request();
-        request.query(fetch10MentorQuery, (err, result) => {
+        request.query(ShowTop10MentorsInHomeQuery, (err, result) => {
           if (err) {
             return res.json({
               error: err.message,
