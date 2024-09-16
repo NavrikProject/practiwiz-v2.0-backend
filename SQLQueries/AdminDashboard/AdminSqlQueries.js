@@ -28,7 +28,7 @@ export const fetchAllApprovedMentorQuery = `SELECT
     m.[mentor_dtls_update_date],
     m.[mentor_headline],
     m.[mentor_approved_status],
-    m.[mentor_pricing],
+    m.[mentor_session_price],
     (
         SELECT 
             e.[mentor_expertise_id],
@@ -108,7 +108,7 @@ export const fetchAllNotApprovedMentorQuery = `SELECT
     m.[mentor_dtls_update_date],
     m.[mentor_headline],
     m.[mentor_approved_status],
-    m.[mentor_pricing],
+    m.[mentor_session_price],
     (
         SELECT 
             e.[mentor_expertise_id],
