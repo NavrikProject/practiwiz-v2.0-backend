@@ -24,7 +24,6 @@ dotenv.config();
 
 // registering of the mentor application
 export async function MentorRegistration(req, res, next) {
-  console.log(req.body);
   const {
     firstName,
     lastName,
@@ -54,7 +53,9 @@ export async function MentorRegistration(req, res, next) {
     Fri,
     Sat,
     Sun,
-    pricing,
+    Pricing,
+    City,
+    Currency,
   } = req.body;
   const imageData = req.files;
   const lowEmail = email.toLowerCase();
@@ -159,7 +160,9 @@ export async function MentorRegistration(req, res, next) {
               request.input("mentor_dtls_cr_date", sql.DateTime, timestamp);
               request.input("mentor_dtls_update_date", sql.DateTime, timestamp);
               request.input("mentor_headline", sql.VarChar, headline);
-              request.input("mentor_pricing", sql.VarChar, pricing);
+              request.input("mentor_session_price", sql.VarChar, Pricing);
+              request.input("mentor_currency", sql.VarChar, Currency);
+              request.input("City", sql.VarChar, City);
               // Execute the query
               request.query(mentorDtlsQuery, async (err, result) => {
                 if (err) {
