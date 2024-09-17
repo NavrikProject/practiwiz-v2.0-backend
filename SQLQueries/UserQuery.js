@@ -1,7 +1,6 @@
 export const userRegDtlsQuery = `
           INSERT INTO [dbo].[users_reg_dtls] (
             [user_reg_email],
-            
             [user_firstname],
             [user_lastname],
             [user_phone_number],

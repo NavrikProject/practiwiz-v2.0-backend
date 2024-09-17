@@ -64,6 +64,8 @@ export const fetchMentorSingleDashboardQuery = `SELECT
     m.[mentor_headline],
     m.[mentor_approved_status],
     m.[mentor_session_price],
+    m.[mentor_currency_type],
+    m.[mentor_city],
     (
         SELECT 
             e.[mentor_expertise_id],
