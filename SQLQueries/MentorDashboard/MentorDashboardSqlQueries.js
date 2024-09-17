@@ -83,7 +83,8 @@ export const fetchMentorSingleDashboardQuery = `SELECT
             p.[mentor_passion_id],
             p.[mentor_passion],
             p.[mentor_passion_cr_date],
-            p.[mentor_passion_update_date]
+            p.[mentor_passion_update_date],
+            p.[mentor_passion_boolean]
         FROM 
             [dbo].[mentor_passion_dtls] p
         WHERE 

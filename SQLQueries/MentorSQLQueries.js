@@ -132,7 +132,8 @@ export const fetchSingleMentorQuery = `SELECT
             p.[mentor_passion_id],
             p.[mentor_passion],
             p.[mentor_passion_cr_date],
-            p.[mentor_passion_update_date]
+            p.[mentor_passion_update_date],
+            p.[mentor_passion_boolean]
         FROM 
             [dbo].[mentor_passion_dtls] p
         WHERE 
@@ -217,7 +218,8 @@ export const fetchAllMentorQuery = `SELECT
             p.[mentor_passion_id],
             p.[mentor_passion],
             p.[mentor_passion_cr_date],
-            p.[mentor_passion_update_date]
+            p.[mentor_passion_update_date],
+            p.[mentor_passion_boolean]
         FROM 
             [dbo].[mentor_passion_dtls] p
         WHERE 
@@ -296,7 +298,8 @@ export const fetchSingleMentorQueryWithBookings = `SELECT
             p.[mentor_passion_id],
             p.[mentor_passion],
             p.[mentor_passion_cr_date],
-            p.[mentor_passion_update_date]
+            p.[mentor_passion_update_date],
+            p.[mentor_passion_boolean]
         FROM 
             [dbo].[mentor_passion_dtls] p
         WHERE 
@@ -416,7 +419,8 @@ export const fetchSingleMentorProfileForPublicQuery = `SELECT
             p.[mentor_passion_id],
             p.[mentor_passion],
             p.[mentor_passion_cr_date],
-            p.[mentor_passion_update_date]
+            p.[mentor_passion_update_date],
+            p.[mentor_passion_boolean]
         FROM 
             [dbo].[mentor_passion_dtls] p
         WHERE 
@@ -715,7 +719,8 @@ export const testQuery = `SELECT
             p.[mentor_passion_id],
             p.[mentor_passion],
             p.[mentor_passion_cr_date],
-            p.[mentor_passion_update_date]
+            p.[mentor_passion_update_date],
+            p.[mentor_passion_boolean]
         FROM 
             [dbo].[mentor_passion_dtls] p
         WHERE 
