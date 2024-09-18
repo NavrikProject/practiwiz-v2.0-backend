@@ -4,22 +4,20 @@ import sql from "mssql";
 import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
 import moment from "moment";
-
+import sgMail from "@sendgrid/mail";
+import { userDtlsQuery } from "../../SQLQueries/MentorSQLQueries.js";
+import { sendEmail } from "../../Middleware/AllFunctions.js";
 import {
-  mentorDtlsQuery,
-  userDtlsQuery,
-} from "../../SQLQueries/MentorSQLQueries.js";
-import {
-  sendEmail,
-  uploadMentorPhotoToAzure,
-} from "../../Middleware/AllFunctions.js";
-import { mentorApplicationEmail } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
-import { passwordUpdateEmailTemplate } from "../../EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
+  passwordUpdateEmailTemplate,
+  resetPasswordEmailTemplate,
+} from "../../EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
 import { InsertNotificationHandler } from "../../Middleware/NotificationFunction.js";
 import {
   InfoMsg,
   PasswordChangedHeading,
   PasswordChangedMessage,
+  ResetPasswordHeading,
+  ResetPasswordMessage,
 } from "../../Messages/Messages.js";
 dotenv.config();
 
@@ -149,335 +147,6 @@ export async function login(req, res) {
     });
   }
 }
-// mentor regist
-export async function userRegistration(req, res, next) {
-  const {
-    firstName,
-    lastName,
-    email,
-    UserType,
-    phoneNumber,
-    password,
-    sociallink,
-    jobtitle,
-    experience,
-    companyName,
-    passionateAbout,
-    AreaOfexpertise,
-    academicQualification,
-    areaofmentorship,
-    headline,
-    lecturesInterest,
-    caseInterest,
-    freeCharge,
-    Timezone,
-    Language,
-    Country,
-    Mon,
-    Tue,
-    Wed,
-    Thu,
-    Fri,
-    Sat,
-    Sun,
-  } = req.body;
-  const imageData = req.files;
-  //console.log(req.files.image);
-  const lowEmail = email.toLowerCase();
-  const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
-  if (
-    !lowEmail &&
-    !password &&
-    !firstName &&
-    !lastName &&
-    !UserType &&
-    !phoneNumber
-  ) {
-    return res.json({
-      required: "All details must be required",
-    });
-  }
-  const blobName = new Date().getTime() + "-" + req.files.image.name;
-  const filename = `https://practiwizstorage.blob.core.windows.net/practiwizcontainer/mentorprofilepictures/${blobName}`;
-  uploadMentorPhotoToAzure(imageData, blobName);
-
-  let saltRounds = await bcrypt.genSalt(12);
-  let hashedPassword = await bcrypt.hash(password, saltRounds);
-
-  sql.connect(config, async (err) => {
-    if (err) {
-      return res.send({ error: "There is something wrong!" });
-    }
-    const request = new sql.Request();
-    request.input("email", sql.VarChar, lowEmail);
-    request.query(
-      "select user_email from users_dtls where user_email = @email",
-      (err, result) => {
-        if (err)
-          return res.status(500).json({ error: "There is something wrong!" });
-        if (result.recordset.length > 0) {
-          return res.status(500).json({
-            error:
-              "This email address is already in use, Please use another email address",
-          });
-        } else {
-          const request = new sql.Request();
-          // Add input parameters
-          request.input("user_email", sql.VarChar, email);
-          request.input("user_pwd", sql.VarChar, hashedPassword);
-          request.input("user_firstname", sql.VarChar, firstName);
-          request.input("user_lastname", sql.VarChar, lastName);
-          request.input("user_phone_number", sql.VarChar, phoneNumber);
-          request.input("user_status", sql.VarChar, "1");
-          request.input("user_modified_by", sql.VarChar, "Admin");
-          request.input("user_type", sql.VarChar, UserType);
-          request.input("user_is_superadmin", sql.VarChar, "0");
-          request.input("user_logindate", sql.Date, timestamp);
-          request.input("user_logintime", sql.Date, timestamp);
-          request.input("user_token", sql.VarChar, "");
-          // Execute the query
-          request.query(userDtlsQuery, (err, result) => {
-            if (result && result.recordset && result.recordset.length > 0) {
-              const userDtlsId = result.recordset[0].user_dtls_id;
-              // Add input parameters
-              request.input("mentor_user_dtls_id", sql.Int, userDtlsId);
-              request.input("mentor_phone_number", sql.VarChar, phoneNumber);
-              request.input("mentor_email", sql.VarChar, email);
-              request.input("mentor_profile_photo", sql.VarChar, filename);
-              request.input(
-                "mentor_social_media_profile",
-                sql.VarChar,
-                sociallink
-              );
-              request.input("mentor_job_title", sql.VarChar, jobtitle);
-              request.input("mentor_company_name", sql.VarChar, companyName);
-              request.input("mentor_years_of_experience", sql.Int, experience);
-              request.input(
-                "mentor_academic_qualification",
-                sql.VarChar,
-                academicQualification
-              );
-              request.input(
-                "mentor_recommended_area_of_mentorship",
-                sql.VarChar,
-                areaofmentorship
-              );
-              request.input(
-                "mentor_guest_lectures_interest",
-                sql.VarChar,
-                lecturesInterest
-              );
-              request.input(
-                "mentor_curating_case_studies_interest",
-                sql.VarChar,
-                caseInterest
-              );
-              request.input(
-                "mentor_sessions_free_of_charge",
-                sql.VarChar,
-                freeCharge
-              );
-              request.input("mentor_language", sql.VarChar, Language);
-              request.input("mentor_timezone", sql.VarChar, Timezone);
-              request.input("mentor_country", sql.VarChar, Country);
-              request.input("mentor_dtls_cr_date", sql.DateTime, timestamp);
-              request.input("mentor_dtls_update_date", sql.DateTime, timestamp);
-              request.input("mentor_headline", sql.VarChar, headline);
-              // Execute the query
-              request.query(mentorDtlsQuery, (err, result) => {
-                if (err) {
-                  console.log(
-                    "There is something went wrong. Please try again later.",
-                    err
-                  );
-                  return res.json({ err: err.message });
-                }
-                if (result && result.recordset && result.recordset.length > 0) {
-                  const mentorDtlsId = result.recordset[0].mentor_dtls_id;
-                  // adding area of expertise word in to table
-                  const areaOfExpertiseWords = AreaOfexpertise.split(",");
-                  areaOfExpertiseWords.forEach((word) => {
-                    request.query(
-                      "INSERT INTO mentor_expertise_dtls (mentor_dtls_id, mentor_expertise, mentor_exp_cr_date, mentor_exp_update_date) VALUES('" +
-                        mentorDtlsId +
-                        "','" +
-                        word.trim() +
-                        "','" +
-                        timestamp +
-                        "','" +
-                        timestamp +
-                        "')",
-                      (err, success) => {
-                        if (err) {
-                          return res.send(
-                            "There is something went wrong. Please try again later."
-                          );
-                        }
-                        if (success) {
-                          console.log("Data inserted successfully" + word);
-                        }
-                      }
-                    );
-                  });
-                  // adding the passion about words in to table
-                  //Parse the JSON string into a JavaScript array
-                  const passionData = JSON.parse(passionateAbout);
-                  // Loop through the array and process each object
-                  passionData.forEach((item) => {
-                    request.query(
-                      "INSERT INTO mentor_passion_dtls (mentor_dtls_id, mentor_passion, mentor_passion_cr_date, mentor_passion_update_date) VALUES('" +
-                        mentorDtlsId +
-                        "','" +
-                        item.text +
-                        "','" +
-                        timestamp +
-                        "','" +
-                        timestamp +
-                        "')",
-                      (err, success) => {
-                        if (err) {
-                          return res.send(
-                            "There is something went wrong. Please try again later."
-                          );
-                        }
-                        if (success) {
-                          console.log(
-                            "Passion Data inserted successfully " + item.text
-                          );
-                        }
-                      }
-                    );
-                  });
-                  if (Mon !== "undefined") {
-                    const monDayParsedArray = JSON.parse(Mon);
-                    arrayFunctions(
-                      monDayParsedArray,
-                      mentorDtlsId,
-                      "Mon",
-                      timestamp
-                    );
-                  } else if (Tue !== "undefined") {
-                    const tueDayParsedArray = JSON.parse(Tue);
-                    arrayFunctions(
-                      tueDayParsedArray,
-                      mentorDtlsId,
-                      "Tue",
-                      timestamp
-                    );
-                  } else if (Wed !== "undefined") {
-                    const wedDayParsedArray = JSON.parse(Wed);
-                    arrayFunctions(
-                      wedDayParsedArray,
-                      mentorDtlsId,
-                      "Wed".timestamp
-                    );
-                  } else if (Thu !== "undefined") {
-                    const thuDayParsedArray = JSON.parse(Thu);
-                    arrayFunctions(
-                      thuDayParsedArray,
-                      mentorDtlsId,
-                      "Wed",
-                      timestamp
-                    );
-                  } else if (Fri !== "undefined") {
-                    const friDayParsedArray = JSON.parse(Fri);
-                    arrayFunctions(
-                      friDayParsedArray,
-                      mentorDtlsId,
-                      "Fri",
-                      timestamp
-                    );
-                  } else if (Sat !== "undefined") {
-                    const satDayParsedArray = JSON.parse(Sat);
-                    arrayFunctions(
-                      satDayParsedArray,
-                      mentorDtlsId,
-                      "Sat",
-                      timestamp
-                    );
-                  } else if (Sun !== "undefined") {
-                    const sunDayParsedArray = JSON.parse(Sun);
-                    arrayFunctions(
-                      sunDayParsedArray,
-                      mentorDtlsId,
-                      "Sun",
-                      timestamp
-                    );
-                  }
-                  const msg = mentorApplicationEmail(
-                    email,
-                    firstName + " " + lastName
-                  );
-                  return res.json({
-                    success: "Thank you for applying the mentor application",
-                  });
-                } else {
-                  console.error("No record inserted or returned.");
-                  return res.json({ err: "No record inserted or returned." });
-                }
-              });
-            } else {
-              console.error("No record inserted or returned.");
-              return res.json({ err: "No record inserted or returned." });
-            }
-          });
-        }
-      }
-    );
-  });
-}
-
-function arrayFunctions(array, mentorDtlsId, day, timestamp) {
-  try {
-    sql.connect(config, (err, conn) => {
-      if (conn) {
-        const request = new sql.Request();
-        array.forEach((item) => {
-          const FromHour = item.from.hours;
-          const FromMinute = item.from.minutes;
-          const FromMeridian = item.from.ampm;
-          const ToHour = item.to.hours;
-          const ToMinute = item.to.minutes;
-          const ToMeridian = item.to.ampm;
-          const mentorRecType = item.mentor_timeslot_rec_indicator;
-          const mentorRecEndDate = item.Mentor_timeslot_rec_end_date;
-          const FromTime = FromHour + ":" + FromMinute + FromMeridian;
-          const ToTime = ToHour + ":" + ToMinute + ToMeridian;
-          console.log(mentorRecType);
-          request.query(
-            "INSERT INTO mentor_timeslots_dtls (mentor_dtls_id,mentor_timeslot_day,mentor_timeslot_from,mentor_timeslot_to,mentor_timeslot_rec_indicator,mentor_timeslot_rec_end_timeframe,mentor_timeslot_rec_cr_date,mentor_timeslot_rec_update_date) VALUES('" +
-              mentorDtlsId +
-              "','" +
-              day +
-              "','" +
-              FromTime +
-              "','" +
-              ToTime +
-              "','" +
-              mentorRecType +
-              "','" +
-              mentorRecEndDate +
-              "','" +
-              timestamp +
-              "','" +
-              timestamp +
-              "')",
-            (err, success) => {
-              if (err) {
-                console.log(err.message);
-              }
-              if (success) {
-                console.log("Data inserted successfully" + item);
-              }
-            }
-          );
-        });
-      }
-    });
-  } catch (error) {
-    console.log(error.message);
-  }
-}
 
 export async function changeUserPassword(req, res, next) {
   const { password, userId } = req.body;
@@ -561,6 +230,161 @@ export async function changeUserPassword(req, res, next) {
         }
       );
     });
+  } catch (error) {
+    return res.send("There is something went wrong. Please try again later.");
+  }
+}
+
+//forgot password from the page
+export async function forgotPassword(req, res) {
+  const email = req.body.email;
+  if (!email) return res.json({ error: "Please enter an email address" });
+  sql.connect(config, async (err) => {
+    if (err)
+      return res.json({
+        error: "There is some error while resetting the password",
+      });
+    const request = new sql.Request();
+    request.input("email", sql.VarChar, email);
+    request.query(
+      "select user_email,user_firstname,user_lastname,user_dtls_id from users_dtls where user_email = @email",
+      async (err, result) => {
+        if (err) {
+          return res.json({
+            error: "There is something went wrong. Please try again later.",
+          });
+        }
+        if (result.recordset.length > 0) {
+          const fullName =
+            result.recordset[0].user_firstname +
+            " " +
+            result.recordset[0].user_lastname;
+          const forgotPasswordToken = jwt.sign(
+            {
+              id: result.recordset[0].user_dtls_id,
+            },
+            process.env.JWT_FORGOT_PASSWORD_TOKEN,
+            { expiresIn: "1h" }
+          );
+          const url = `${process.env.FRONT_END_LINK}/user/activate/reset-password/${forgotPasswordToken}`;
+          const msg = resetPasswordEmailTemplates(
+            email,
+            fullName.toUpperCase(),
+            url
+          );
+          const userId = result.recordset[0].user_dtls_id;
+          const notificationHandler = InsertNotificationHandler(
+            userId,
+            InfoMsg,
+            ResetPasswordHeading,
+            ResetPasswordMessage
+          );
+          const emailResponse = await sendEmail(msg);
+          if (
+            emailResponse === "True" ||
+            emailResponse === "true" ||
+            emailResponse === true
+          ) {
+            return res.json({
+              success:
+                "Password reset email has been sent successfully, Link will be expire in the 1 hour",
+            });
+          }
+        } else {
+          return res.json({ error: "Email is not registered, Please sign up" });
+        }
+      }
+    );
+  });
+}
+
+export async function resetPassword(req, res) {
+  const password = req.body.password;
+  if (!password) {
+    return res.json({ error: "The password must be required" });
+  }
+  const hashedPassword = await bcrypt.hash(password, 12);
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      const token = authHeader.split(" ")[1];
+      jwt.verify(token, process.env.JWT_FORGOT_PASSWORD_TOKEN, (err, user) => {
+        if (!err) {
+          sql.connect(config, async (err) => {
+            if (err)
+              return res.json({ error: "Please enter an email address" });
+            const request = new sql.Request();
+            request.input("id", sql.Int, user.id);
+            request.query(
+              "select user_dtls_id,user_email,user_firstname,user_lastname from users_dtls where user_dtls_id = @id",
+              (err, result) => {
+                if (err) {
+                  return res.send({ error: err.message });
+                }
+                if (result.recordset.length > 0) {
+                  const email = result.recordset[0].user_email;
+                  const username =
+                    result.recordset[0].user_firstname +
+                    " " +
+                    result.recordset[0].user_lastname;
+                  request.input("userId", sql.Int, user.id);
+                  request.input("password", sql.VarChar, hashedPassword);
+                  request.query(
+                    "update users_dtls set user_pwd= @password where user_dtls_id= @userId",
+                    async (err, response) => {
+                      if (err)
+                        return res.send(
+                          "There is something went wrong. Please try again later."
+                        );
+                      if (response) {
+                        const msg = passwordUpdateEmailTemplate(
+                          email,
+                          username
+                        );
+                        const notificationHandler = InsertNotificationHandler(
+                          user.id,
+                          InfoMsg,
+                          PasswordChangedHeading,
+                          PasswordChangedMessage
+                        );
+                        const emailResponse = await sendEmail(msg);
+                        if (
+                          emailResponse === "True" ||
+                          emailResponse === "true" ||
+                          emailResponse === true
+                        ) {
+                          return res.json({
+                            success: "Password changed successfully",
+                          });
+                        }
+                        if (
+                          emailResponse === "False" ||
+                          emailResponse === "false" ||
+                          emailResponse === false
+                        ) {
+                          return res.json({
+                            success: "Password changed successfully",
+                          });
+                        }
+                      }
+                    }
+                  );
+                } else {
+                  return res.send({
+                    error:
+                      "There is no account with this email address. Please sign up!",
+                  });
+                }
+              }
+            );
+          });
+        } else {
+          return res.send({ token: "link is invalid or expired" });
+        }
+      });
+    } else {
+      return res.send({ token: "You are not authenticated" });
+    }
   } catch (error) {
     return res.send("There is something went wrong. Please try again later.");
   }

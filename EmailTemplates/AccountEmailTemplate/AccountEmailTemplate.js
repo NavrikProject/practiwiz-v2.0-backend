@@ -172,3 +172,78 @@ export const passwordUpdateEmailTemplate = (email, username) => {
     `,
   };
 };
+
+// email reset password working
+export const resetPasswordEmailTemplate = (email, username, url) => {
+  return {
+    to: `${email}`, // Change to your recipient
+    from: "no-reply@practiwiz.com", // Change to your verified sender
+    subject: `Reset your password`,
+    html: `
+ <section>
+      <div
+        style="
+          font-size: 19px;
+          font-family: poppins;
+          max-width: 700px;
+          margin: auto;
+          padding: 50px 20px;
+        "
+      >
+        <h2
+          style="
+            text-transform: uppercase;
+            color: teal;
+            text-align: center;
+            padding-bottom: 30px;
+          "
+        >
+          Welcome to the Practiwiz Training Programme
+        </h2>
+        <p>Hi <b>${username}</b>,</p>
+        <p>
+          We're sorry to see that you've forgotten your password. Let us know if
+          you forgot it, or if you just want to change your password.
+        </p>
+        <p>
+          Please visit this click on the reset button to reset your password on
+          <b>Practiwiz</b>
+        </p>
+        <button
+          style="
+            background-color: #085cca;
+            border: none;
+            color: white;
+            padding: 10px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 7px;
+          "
+        >
+          <a
+            style="text-decoration: none; font-size: 17px; color: white"
+            href="${url}"
+            >Reset Password</a
+          >
+        </button>
+        <p>or if it doesn't work try the link below</p>
+        <p>${url}</p>
+        <p>After 15 minutes this link will be expired.</p>
+        <p>
+          If you have any questions, send an email to wecare@practiwiz.com  and we'll be happy
+          to help.
+        </p>
+        <p>Thanks, Practiwiz</p>
+        <img
+          width="300px"
+          height="100px"
+          src="https://res.cloudinary.com/droa7dncb/image/upload/v1665987569/practiwiz-logo3_xifxbc.png"
+          alt="Logo"
+        />
+      </div>
+    </section>
+    `,
+  };
+};

@@ -16,15 +16,36 @@ export const verifyUserToken = (req, res, next) => {
           req.user = user;
           next();
         } else {
-          return res.send({ token: "Token is invalid or expired" });
+          return res.send({ error: "Token is invalid or expired" });
         }
       }
     );
   } else {
-    return res.send({ token: "You are not authenticated" });
+    return res.send({ error: "You are not authenticated" });
   }
 };
-
+export const verifyPasswordUserToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+    var replaceToken = token.replace('"', "");
+    var replaceToken = replaceToken.replace('"', "");
+    jwt.verify(
+      replaceToken,
+      process.env.JWT_FORGOT_PASSWORD_TOKEN,
+      (err, user) => {
+        if (!err) {
+          req.user = user;
+          next();
+        } else {
+          return res.json({ error: "The link has been expired." });
+        }
+      }
+    );
+  } else {
+    return res.json({ error: "The link has been expired." });
+  }
+};
 export const verifyAdminAccessToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (authHeader) {

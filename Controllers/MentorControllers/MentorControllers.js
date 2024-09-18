@@ -251,7 +251,8 @@ export async function MentorRegistration(req, res, next) {
                     arrayFunctions(
                       wedDayParsedArray,
                       mentorDtlsId,
-                      "Wed".timestamp
+                      "Wed",
+                      timestamp
                     );
                   }
                   if (Thu !== "undefined") {
