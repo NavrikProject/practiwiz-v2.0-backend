@@ -51,7 +51,8 @@ INSERT INTO [dbo].[mentor_dtls] (
     [mentor_headline],   
     [mentor_session_price],
     [mentor_currency_type],
-    [mentor_city]
+    [mentor_city],
+    [mentor_institute]
 ) OUTPUT INSERTED.mentor_dtls_id VALUES (
     @mentor_user_dtls_id,
     @mentor_phone_number,
@@ -75,6 +76,7 @@ INSERT INTO [dbo].[mentor_dtls] (
     @mentor_session_price,
     @mentor_currency,
     @City
+    @Institute
 );
 `;
 

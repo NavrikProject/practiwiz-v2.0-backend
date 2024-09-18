@@ -1,5 +1,17 @@
 {
   "appService.zipIgnorePattern": ["node_modules{,/**}", ".vscode{,/**}"],
   "appService.defaultWebAppToDeploy": "None",
-  "cSpell.words": ["mentee", "Practiwiz", "razorpay"]
+  "cSpell.words": [
+    "appt",
+    "dlts",
+    "logindate",
+    "logintime",
+    "mentee",
+    "Practiwiz",
+    "razorpay",
+    "sugg",
+    "timeframe",
+    "timeslot",
+    "timeslots"
+  ]
 }

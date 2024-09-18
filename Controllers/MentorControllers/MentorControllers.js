@@ -56,6 +56,7 @@ export async function MentorRegistration(req, res, next) {
     Pricing,
     City,
     Currency,
+    Institute,
   } = req.body;
   const imageData = req.files;
   const lowEmail = email.toLowerCase();
@@ -163,6 +164,7 @@ export async function MentorRegistration(req, res, next) {
               request.input("mentor_session_price", sql.VarChar, Pricing);
               request.input("mentor_currency", sql.VarChar, Currency);
               request.input("City", sql.VarChar, City);
+              request.input("Institute", sql.VarChar, Institute);
               // Execute the query
               request.query(mentorDtlsQuery, async (err, result) => {
                 if (err) {
