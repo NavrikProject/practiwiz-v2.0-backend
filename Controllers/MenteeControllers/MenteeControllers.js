@@ -6,14 +6,15 @@ import dotenv from "dotenv";
 import { sendEmail } from "../../Middleware/AllFunctions.js";
 import moment from "moment";
 import { userDtlsQuery } from "../../SQLQueries/MentorSQLQueries.js";
-import {
-  IsFeedbackSubmittedQuery,
-  MenteeApprovedBookingQuery,
-  MenteeCompletedBookingQuery,
-  MenteeFeedbackSubmitHandlerQuery,
-  MenteeRegisterQuery,
-} from "../../SQLQueries/MenteeSqlQueries.js";
+import { MenteeRegisterQuery } from "../../SQLQueries/Mentee/MenteeSqlQueries.js";
 import { accountCreatedEmailTemplate } from "../../EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
+import { InsertNotificationHandler } from "../../Middleware/NotificationFunction.js";
+import {
+  AccountCreatedHeading,
+  AccountCreatedMessage,
+  SuccessMsg,
+} from "../../Messages/Messages.js";
+
 dotenv.config();
 
 // registering of the mentor application
@@ -25,17 +26,17 @@ export async function MenteeRegistration(req, res, next) {
     mentee_firstname,
     mentee_gender,
     mentee_lastname,
-    mentee_phone_number,
+    mentee_phone,
     mentee_type,
-    mentor_password,
+    mentee_password,
+    mentee_InstituteName,
   } = req.body.data;
   const { userType } = req.body;
 
   const lowEmail = mentee_Email.toLowerCase();
   const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
   let saltRounds = await bcrypt.genSalt(12);
-  let hashedPassword = await bcrypt.hash(mentor_password, saltRounds);
-
+  let hashedPassword = await bcrypt.hash(mentee_password, saltRounds);
   sql.connect(config, async (err) => {
     if (err) {
       return res.send({ error: "There is something wrong!" });
@@ -58,7 +59,7 @@ export async function MenteeRegistration(req, res, next) {
           request.input("user_pwd", sql.VarChar, hashedPassword);
           request.input("user_firstname", sql.VarChar, mentee_firstname);
           request.input("user_lastname", sql.VarChar, mentee_lastname);
-          request.input("user_phone_number", sql.VarChar, mentee_phone_number);
+          request.input("user_phone_number", sql.VarChar, mentee_phone);
           request.input("user_status", sql.VarChar, "1");
           request.input("user_modified_by", sql.VarChar, "Admin");
           request.input("user_type", sql.VarChar, userType);
@@ -80,6 +81,11 @@ export async function MenteeRegistration(req, res, next) {
                 sql.VarChar,
                 "mentee profile pic"
               );
+              request.input(
+                "menteeInstitute",
+                sql.VarChar,
+                mentee_InstituteName
+              );
               request.input("menteeCrDate", sql.Date, timestamp);
               request.input("menteeUpDate", sql.Date, timestamp);
               request.query(MenteeRegisterQuery, async (err, result) => {
@@ -89,6 +95,12 @@ export async function MenteeRegistration(req, res, next) {
                   });
                 }
                 if (result) {
+                  const notificationHandler = await InsertNotificationHandler(
+                    userDtlsId,
+                    SuccessMsg,
+                    AccountCreatedHeading,
+                    AccountCreatedMessage
+                  );
                   const msg = accountCreatedEmailTemplate(
                     lowEmail,
                     mentee_firstname + " " + mentee_lastname
@@ -122,104 +134,4 @@ export async function MenteeRegistration(req, res, next) {
       }
     );
   });
-}
-
-// get mentor approved or not approved booking appointments using the userid
-export async function MenteeApprovedBookingAppointments(req, res) {
-  const { userDtlsId } = req.body;
-  try {
-    sql.connect(config, (err, db) => {
-      if (err) return res.json({ error: "There is some error while fetching" });
-      const request = new sql.Request();
-      request.input("menteeUserDtlsId", sql.Int, userDtlsId);
-      request.query(MenteeApprovedBookingQuery, (err, result) => {
-        if (err) return res.json({ error: err.message });
-        if (result && result.recordset && result.recordset.length > 0) {
-          return res.json({ success: result.recordset });
-        } else {
-          return res.json({ error: "No record found" });
-        }
-      });
-    });
-  } catch (error) {
-    return res.json({ error: "There is some error while fetching" });
-  }
-}
-
-// get mentor approved or not approved booking appointments using the userid
-export async function MenteeCompletedBookingAppointments(req, res) {
-  const { userDtlsId } = req.body;
-  try {
-    sql.connect(config, (err, db) => {
-      if (err) return res.json({ error: "There is some error while fetching" });
-      const request = new sql.Request();
-      request.input("menteeUserDtlsId", sql.Int, userDtlsId);
-      request.query(MenteeCompletedBookingQuery, (err, result) => {
-        if (err) return res.json({ error: err.message });
-        if (result && result.recordset && result.recordset.length > 0) {
-          return res.json({ success: result.recordset });
-        } else {
-          return res.json({ error: "no bookings found" });
-        }
-      });
-    });
-  } catch (error) {
-    return res.json({ error: "There is some error while fetching" });
-  }
-}
-
-export async function MenteeFeedbackSubmitHandler(req, res) {
-  const {
-    platformExperience,
-    contentRelevance,
-    mentorCommunication,
-    sessionPace,
-    sessionFeedback,
-    anotherSession,
-    detailedSessionFeedback,
-    mentorUserId,
-    mentorDtlsId,
-    menteeUserId,
-    bookingId,
-    overallRating,
-  } = req.body;
-  const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
-
-  try {
-    sql.connect(config, (err, db) => {
-      if (err) return res.json({ error: err.message });
-      const request = new sql.Request();
-      request.input("mentorBookingID", sql.Int, bookingId);
-      request.query(IsFeedbackSubmittedQuery, (err, result) => {
-        if (err) return res.json({ error: err.message });
-        if (result.recordset.length === 0) {
-          request.input("mentorDtlsId", sql.Int, mentorDtlsId);
-          request.input("mentorUserDtlsId", sql.Int, mentorUserId);
-          request.input("mentorApptBookingDtlsId", sql.Int, bookingId);
-          request.input("menteeUserDtlsId", sql.Int, menteeUserId);
-          request.input("sessionRelevant", sql.Int, contentRelevance);
-          request.input("commSkills", sql.Int, mentorCommunication);
-          request.input("sessionAppropriate", sql.Int, sessionPace);
-          request.input("detailedFb", sql.Text, detailedSessionFeedback);
-          request.input("fbSugg", sql.Text, sessionFeedback);
-          request.input("anotherSession", sql.VarChar(10), anotherSession);
-          request.input("overallRating", sql.Int, overallRating);
-          request.input("platformRating", sql.Int, platformExperience);
-          request.input("mentorFeedbackDtlsCrDate", sql.Date, timestamp);
-          request.query(MenteeFeedbackSubmitHandlerQuery, (err, result) => {
-            if (err) return res.json({ error: err.message });
-            if (result) {
-              return res.json({ success: "Thank you for your feedback" });
-            }
-          });
-        } else {
-          return res.json({
-            success: "You have all ready submitted the feedback. Thank you",
-          });
-        }
-      });
-    });
-  } catch (error) {
-    return res.json({ error: "There is some error while fetching" });
-  }
 }

@@ -21,7 +21,8 @@ import menteeRoute from "./Routes/MenteeRoutes/MenteeRoutes.js";
 import instituteRoute from "./Routes/InstituteRoutes/InstituteRoutes.js";
 import mentorDashboardRouter from "./Routes/MentorRoutes/MentorDashboard.js";
 import adminDashboardRoute from "./Routes/AdminDashboard/AdminDashboardRoutes.js";
-import mentorDashboardUpdateRoute from "./Routes/MentorRoutes/MentorDashboardUpdateRoutes.js"
+import mentorDashboardUpdateRoute from "./Routes/MentorRoutes/MentorDashboardUpdateRoutes.js";
+import menteeDashboardRoute from "./Routes/MenteeRoutes/MenteeDashboardRoutes.js";
 import config from "./Config/dbConfig.js";
 import { InsertNotificationHandler } from "./Middleware/NotificationFunction.js";
 import { accountCreatedEmailTemplate } from "./EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
@@ -120,6 +121,7 @@ app.use("/api/v1/mentor/dashboard/update", mentorDashboardUpdateRoute);
 
 // mentee routes
 app.use("/api/v1/mentee", menteeRoute);
+app.use("/api/v1/mentee/dashboard", menteeDashboardRoute);
 
 // institute routes
 app.use("/api/v1/institute", instituteRoute);

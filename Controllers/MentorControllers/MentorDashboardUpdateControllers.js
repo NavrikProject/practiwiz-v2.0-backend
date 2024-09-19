@@ -71,7 +71,7 @@ export async function MentorUpdateMentorProfile2(req, res) {
     mentor_job_title,
     mentor_years_of_experience,
     mentor_company_name,
-    mentor_academic_qualification,
+    mentor_institute,
     expertise_list,
     mentor_recommended_area_of_mentorship,
     mentor_headline,
@@ -80,7 +80,6 @@ export async function MentorUpdateMentorProfile2(req, res) {
   const { userDtlsId } = req.body;
   const passionAbout = JSON.parse(req.body.passionAboutList);
   const expertiseData = JSON.parse(expertise_list);
-
   try {
     sql.connect(config, (err) => {
       if (err)
@@ -108,7 +107,7 @@ export async function MentorUpdateMentorProfile2(req, res) {
               sql.VarChar,
               academic_qualification
             );
-            request.input("institute", sql.VarChar, academic_qualification);
+            request.input("institute", sql.VarChar, mentor_institute);
             request.input("headline", sql.VarChar, mentor_headline);
             request.input(
               "mentorship",

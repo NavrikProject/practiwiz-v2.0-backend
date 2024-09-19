@@ -1,24 +1,50 @@
-export const MenteeRegisterQuery = `
-          INSERT INTO [dbo].[mentee_dtls] (
-            [mentee_user_dtls_id],
-            [mentee_about],
-            [mentee_skills],
-            [mentee_gender],
-            [mentee_type],
-            [mentee_profile],
-            [mentor_dtls_cr_date],
-            [mentor_dtls_update_date]
-        ) OUTPUT INSERTED.mentee_dtls_id VALUES (
-            @menteeUserDtlsId,
-            @menteeAbout,
-            @menteeSkills,
-            @menteeGender,
-            @menteeType,
-            @menteeProfilePic,
-            @menteeCrDate,
-            @menteeUpDate
-        );
+// fetch single mentee details from the dashboard after login
+// to fetch the booking details and timeslots and everything this is working right now
+export const fetchMenteeSingleDashboardQuery = `SELECT 
+    u.[user_dtls_id],
+    u.[user_email] as mentee_email,
+    u.[user_firstname] as mentee_firstname,
+    u.[user_lastname] as mentee_lastname,
+    u.[user_phone_number] as mentee_phone_number,
+    u.[user_type] ,
+    u.[user_is_superadmin],
+    m.[mentee_dtls_id],
+    m.[mentee_user_dtls_id],
+    m.[mentee_about],
+    m.[mentee_skills],
+    m.[mentee_gender],
+    m.[mentee_type],
+    m.[mentee_profile],
+    m.[mentee_institute],
+    m.[mentee_dtls_update_date],
+    (
+        SELECT 
+        n.[notification_dtls_id],
+        n.[notification_user_dtls_id],
+        n.[notification_type],
+        n.[notification_heading],
+        n.[notification_message],
+        n.[notification_is_read],
+        n.[notification_created_at],
+        n.[notification_read_at]
+        FROM 
+            [dbo].[notifications_dtls] n
+        WHERE 
+            u.[user_dtls_id] = n.[notification_user_dtls_id]
+        ORDER BY 
+            n.[notification_created_at] DESC
+        FOR JSON PATH
+    ) AS notification_list
+FROM 
+    [dbo].[users_dtls] u
+JOIN 
+    [dbo].[mentee_dtls] m
+ON 
+    u.[user_dtls_id] = m.[mentee_user_dtls_id]
+WHERE 
+    u.[user_dtls_id] = @desired_mentee_dtls_id
 `;
+
 export const MenteeApprovedBookingQueryTest = `SELECT  [mentor_booking_appt_id]
       ,[mentor_dtls_id]
       ,[mentee_user_dtls_id]
@@ -160,3 +186,8 @@ export const MenteeFeedbackSubmitHandlerQuery = `INSERT INTO [dbo].[mentor_feedb
                 @platformRating,
                 @mentorFeedbackDtlsCrDate
             );`;
+
+export const MarkMenteeAllMessagesAsReadQuery = `update notifications_dtls set notification_is_read = 1, notification_read_at =@timestamp where notification_user_dtls_id = @menteeUserDtlsId`;
+
+export const MarkMenteeSingleMessageAsReadQuery = `update notifications_dtls set notification_is_read = 1, notification_read_at =@timestamp where notification_user_dtls_id = @menteeUserDtlsId and notification_dtls_id = @menteeNotificationId
+`;

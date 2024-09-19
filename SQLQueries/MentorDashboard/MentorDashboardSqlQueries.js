@@ -143,7 +143,7 @@ export const fetchMentorSingleDashboardQuery = `SELECT
             b.[mentor_dtls_id] = m.[mentor_dtls_id] and b.[mentor_booking_confirmed] = 'Yes' or b.[mentor_booking_confirmed] = 'No'
         FOR JSON PATH
     ) AS booking_dtls_list,
-     (
+    (
     SELECT 
         bank.[mentor_bank_dtls_id],
         bank.[mentor_bank_user_dtls_id],

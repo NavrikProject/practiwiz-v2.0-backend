@@ -21,6 +21,8 @@ import {
 } from "../../Middleware/DateFunction.js";
 import { appointmentBookedTraineeEmailTemplate } from "../../EmailTemplates/MentorEmailTemplate/MentorBookingEmailTemplate.js";
 import { sendEmail } from "../../Middleware/AllFunctions.js";
+import { InsertNotificationHandler } from "../../Middleware/NotificationFunction.js";
+import { SuccessMsg } from "../../Messages/Messages.js";
 
 dotenv.config();
 
@@ -30,16 +32,21 @@ export async function createMentorRazorPayOrder(req, res, next) {
   try {
     sql.connect(config, (err) => {
       if (err) {
-        return res.send(err.message);
+        return res.json({
+          error: "There is some error while creating the order",
+        });
       }
       const request = new sql.Request();
       request.input("mentorId", sql.Int, mentorId);
       request.query(
         "select * from mentor_dtls where mentor_dtls_id = @mentorId",
         (err, result) => {
-          if (err) return res.send(err.message);
+          if (err)
+            return res.json({
+              error: "There is some error while creating the order",
+            });
           if (result.recordset.length > 0) {
-            const mentorPrice = result.recordset[0].mentor_amount;
+            const mentorPrice = result.recordset[0].mentor_session_price;
             const instance = new Razorpay({
               key_id: process.env.RAZORPAY_KEY_ID,
               key_secret: process.env.RAZORPAY_KEY_SECRET_STRING,
@@ -71,10 +78,10 @@ export async function createMentorRazorPayOrder(req, res, next) {
                 });
               })
               .catch((error) => {
-                return res.send({ error: error.message });
+                return res.json({ error: error.message });
               });
           } else {
-            return res.send({
+            return res.json({
               error: "There is an error while booking the appointment",
             });
           }
@@ -82,12 +89,11 @@ export async function createMentorRazorPayOrder(req, res, next) {
       );
     });
   } catch (error) {
-    return res.send({ error: error.message });
+    return res.json({ error: error.message });
   }
 }
 
-// create the mentor booking appointment
-
+// create the mentor booking appointment after payment
 export async function createMentorBookingAppointment(req, res, next) {
   const {
     mentorId,
@@ -106,7 +112,7 @@ export async function createMentorBookingAppointment(req, res, next) {
   );
   try {
     sql.connect(config, (err, db) => {
-      if (err) return res.send({ error: err.message });
+      if (err) return res.json({ error: err.message });
       if (db) {
         const request = new sql.Request();
         request.input("mentorDtlsId", sql.Int, mentorId);
@@ -137,25 +143,30 @@ export async function createMentorBookingAppointment(req, res, next) {
         request.input("mentorHostUrl", sql.VarChar, "Mentor host url");
         request.input("traineeJoinUrl", sql.VarChar, "trainee join url");
         request.input("mentorAmountPaidStatus", sql.VarChar, "Yes");
-        request.query(MentorBookingAppointmentQuery, (err, result) => {
+        request.query(MentorBookingAppointmentQuery, async (err, result) => {
           if (err) {
-            return res.send({
+            return res.json({
               error: err.message,
             });
           }
           if (result) {
+            const notificationHandler = await InsertNotificationHandler(
+              userId,
+              SuccessMsg,
+              "Mentor Appointment Booked",
+              AccountCreatedMessage
+            );
             return res.json({ success: "Successfully appointment is created" });
           }
         });
       }
     });
   } catch (error) {
-    return res.send({ error: error.message });
+    return res.json({ error: error.message });
   }
 }
 
 // get the upcoming mentor appointments
-
 export async function MentorApprovedBookingAppointments(req, res) {
   const { userDtlsId } = req.body;
   try {
@@ -177,7 +188,7 @@ export async function MentorApprovedBookingAppointments(req, res) {
   }
 }
 
-// update the mentor booking appointment
+// update the mentor booking appointment to generate the meeting invite
 export async function UpdateMentorBookingAppointment(req, res, next) {
   const { bookingId } = req.body;
   try {
@@ -228,7 +239,6 @@ export async function UpdateMentorBookingAppointment(req, res, next) {
                   joinURL
                 );
                 const emailResponse = await sendEmail(msg);
-               c
               }
             }
           );
