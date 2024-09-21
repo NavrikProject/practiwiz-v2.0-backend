@@ -34,7 +34,25 @@ export const fetchMenteeSingleDashboardQuery = `SELECT
         ORDER BY 
             n.[notification_created_at] DESC
         FOR JSON PATH
-    ) AS notification_list
+    ) AS notification_list,
+     (
+        SELECT  b.[mentor_booking_appt_id]
+      ,b.[mentor_dtls_id]
+      ,b.[mentee_user_dtls_id]
+      ,b.[mentor_session_booking_date]
+      ,b.[mentor_booked_date]
+      ,b.[mentor_booking_time]
+      ,b.[mentor_amount]
+      ,b.[mentor_razorpay_payment_id]
+      ,b.[mentor_razorpay_order_id]
+      ,b.[mentor_amount_paid_status]
+  FROM [dbo].[mentor_booking_appointments_dtls] b
+        WHERE 
+            u.[user_dtls_id] = b.[mentee_user_dtls_id]
+        ORDER BY 
+            b.[mentor_booking_appt_id] DESC
+        FOR JSON PATH
+    ) AS booking_list
 FROM 
     [dbo].[users_dtls] u
 JOIN 
@@ -99,7 +117,8 @@ ON
     md.[mentor_user_dtls_id] = ud.[user_dtls_id]  -- Assuming user_dtls_id is the primary key in users_dtls
 WHERE 
     mba.[mentee_user_dtls_id] = @menteeUserDtlsId 
-    AND (mba.[mentor_booking_confirmed] = 'No' OR mba.[mentor_booking_confirmed] = 'Yes' AND mba.[mentor_session_status] = 'upcoming' AND mba.[trainee_session_status] = 'upcoming');
+    AND (mba.[mentor_booking_confirmed] = 'No' OR mba.[mentor_booking_confirmed] = 'Yes' AND mba.[mentor_session_status] = 'upcoming' AND mba.[trainee_session_status] = 'upcoming')
+order by mentor_session_booking_date;
 
 `;
 // mentee completed booking queries with feedback
@@ -151,7 +170,8 @@ ON
     mba.[mentor_booking_appt_id] = mfd.[mentor_appt_booking_dtls_id]
 WHERE 
     mba.[mentee_user_dtls_id] = @menteeUserDtlsId 
-    AND (mba.[mentor_booking_confirmed] = 'Yes' AND mba.[mentor_session_status] = 'completed' AND mba.[trainee_session_status] = 'completed');
+    AND (mba.[mentor_booking_confirmed] = 'Yes' AND mba.[mentor_session_status] = 'completed' AND mba.[trainee_session_status] = 'completed')
+order by mentor_session_booking_date;
 `;
 // checking the feedback is submitted
 export const IsFeedbackSubmittedQuery = `SELECT [mentor_appt_booking_dtls_id]

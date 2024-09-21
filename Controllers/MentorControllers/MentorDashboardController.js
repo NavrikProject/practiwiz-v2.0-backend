@@ -11,6 +11,8 @@ import {
   MarkMentorSingleMessageAsReadQuery,
 } from "../../SQLQueries/MentorDashboard/MentorDashboardSqlQueries.js";
 import moment from "moment";
+import { InsertNotificationHandler } from "../../Middleware/NotificationFunction.js";
+import { InfoMsg } from "../../Messages/Messages.js";
 
 dotenv.config();
 
@@ -123,6 +125,12 @@ export async function InsertBankDetails(req, res) {
                 return res.status({ error: err.message });
               }
               if (result) {
+                const notificationHandler = InsertNotificationHandler(
+                  userId,
+                  InfoMsg,
+                  "Bank details added",
+                  "Successfully updated the bank details."
+                );
                 return res.json({
                   success: "successfully inserted the bank details",
                 });

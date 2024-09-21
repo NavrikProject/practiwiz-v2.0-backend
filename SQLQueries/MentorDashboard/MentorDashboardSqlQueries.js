@@ -129,6 +129,27 @@ export const fetchMentorSingleDashboardQuery = `SELECT
     ) AS notification_list,
     (
         SELECT 
+        c.[case_study_dtls_id],
+      c.[case_study_dtls_user_id],
+      c.[case_study_dtls_mentor_id],
+      c.[case_study_dtls_topic_category],
+      c.[case_study_dtls_title],
+      c.[case_study_dtls_lesson],
+      c.[case_study_dtls_people_after_read],
+      c.[case_study_dtls_roles],
+      c.[case_study_dtls_main_role],
+      c.[case_study_dtls_main_challenge],
+      c.[case_study_cr_date]
+        FROM 
+            [dbo].[case_studies_dtls] c
+        WHERE 
+            u.[user_dtls_id] = c.[case_study_dtls_user_id]
+        ORDER BY 
+            c.[case_study_dtls_id] DESC
+        FOR JSON PATH
+    ) AS case_studies_list,
+    (
+        SELECT 
         b.[mentor_dtls_id],
         b.[mentor_session_booking_date],
         b.[mentor_booked_date],

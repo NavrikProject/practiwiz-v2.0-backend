@@ -1,0 +1,27 @@
+export const insertMentorCaseStudyQuery = `INSERT INTO [dbo].[case_studies_dtls] 
+(
+    [case_study_dtls_user_id],
+    [case_study_dtls_mentor_id],
+    [case_study_dtls_topic_category],
+    [case_study_dtls_title],
+    [case_study_dtls_lesson],
+    [case_study_dtls_people_after_read],
+    [case_study_dtls_no_characters],
+    [case_study_dtls_roles],
+    [case_study_dtls_main_role],
+    [case_study_dtls_main_challenge]
+)
+VALUES 
+(
+    @userId,
+    @mentorId,
+    @topicCategory,
+    @title,
+    @lesson,
+    @peopleAfterRead,
+    @noCharacters,
+    @roles,
+    @mainRole,
+    @mainChallenge
+);
+`;

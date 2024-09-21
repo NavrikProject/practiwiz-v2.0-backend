@@ -382,9 +382,9 @@ AND
 
 export const fetchSingleMentorProfileForPublicQuery = `SELECT 
     u.[user_dtls_id],
-    u.[user_email],
-    u.[user_firstname],
-    u.[user_lastname],
+    u.[user_email] as mentor_email,
+    u.[user_firstname] as mentor_firstname,
+    u.[user_lastname] as mentor_lastname,
     u.[user_phone_number],
     m.[mentor_dtls_id],
     m.[mentor_user_dtls_id],

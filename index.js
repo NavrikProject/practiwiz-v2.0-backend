@@ -21,9 +21,13 @@ import menteeRoute from "./Routes/MenteeRoutes/MenteeRoutes.js";
 import instituteRoute from "./Routes/InstituteRoutes/InstituteRoutes.js";
 import mentorDashboardRouter from "./Routes/MentorRoutes/MentorDashboard.js";
 import adminDashboardRoute from "./Routes/AdminDashboard/AdminDashboardRoutes.js";
+import adminCaseStudiesDashboardRoute from "./Routes/AdminDashboard/AdminDashboardCaseStudiesRoutes.js";
 import mentorDashboardUpdateRoute from "./Routes/MentorRoutes/MentorDashboardUpdateRoutes.js";
 import menteeDashboardRoute from "./Routes/MenteeRoutes/MenteeDashboardRoutes.js";
+import menteeProfileDashboardRoute from "./Routes/MenteeRoutes/MenteeProfileSettings.js";
+
 import config from "./Config/dbConfig.js";
+import mentorDashboardCaseStudyRouter from "./Routes/MentorRoutes/MentorCaseStudyRoute.js";
 import { InsertNotificationHandler } from "./Middleware/NotificationFunction.js";
 import { accountCreatedEmailTemplate } from "./EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
 import { sendEmail } from "./Middleware/AllFunctions.js";
@@ -118,16 +122,19 @@ app.use("/api/v1/mentor", mentorRouter);
 app.use("/api/v1/mentor/booking/appointment", mentorBookingRouter);
 app.use("/api/v1/mentor/dashboard", mentorDashboardRouter);
 app.use("/api/v1/mentor/dashboard/update", mentorDashboardUpdateRoute);
+app.use("/api/v1/mentor/dashboard/case-study", mentorDashboardCaseStudyRouter);
 
 // mentee routes
 app.use("/api/v1/mentee", menteeRoute);
 app.use("/api/v1/mentee/dashboard", menteeDashboardRoute);
+app.use("/api/v1/mentee/dashboard/profile", menteeProfileDashboardRoute);
 
 // institute routes
 app.use("/api/v1/institute", instituteRoute);
 
 // admin dashboard
 app.use("/api/v1/admin/dashboard", adminDashboardRoute);
+app.use("/api/v1/admin/dashboard/case-studies", adminCaseStudiesDashboardRoute);
 
 async function connectToDatabases() {
   try {

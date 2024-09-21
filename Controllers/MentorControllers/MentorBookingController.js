@@ -105,6 +105,9 @@ export async function createMentorBookingAppointment(req, res, next) {
     razorpayPaymentId,
     razorpayOrderId,
     razorpaySignature,
+    mentorUserDtlsId,
+    mentorName,
+    username,
   } = req.body;
   const { questions, selected } = req.body.data;
   let ChangedDate = new Date(
@@ -150,11 +153,32 @@ export async function createMentorBookingAppointment(req, res, next) {
             });
           }
           if (result) {
-            const notificationHandler = await InsertNotificationHandler(
+            const mentorNotificationHandler = InsertNotificationHandler(
+              mentorUserDtlsId,
+              SuccessMsg,
+              "Appointment booked by Mentee",
+              "You have received the mentor session appointment with " +
+                username +
+                " on " +
+                new Date(date).toLocaleDateString() +
+                " at " +
+                from +
+                "-" +
+                to
+            );
+            const menteeNotificationHandler = InsertNotificationHandler(
               userId,
               SuccessMsg,
-              "Mentor Appointment Booked",
-              AccountCreatedMessage
+              "Appointment is booked",
+              "You have booked the session appointment with " +
+                mentorName +
+                " on " +
+                new Date(date).toLocaleDateString() +
+                " at " +
+                from +
+                "-" +
+                to +
+                " Please wait for the mentor to accept the session."
             );
             return res.json({ success: "Successfully appointment is created" });
           }
@@ -190,7 +214,7 @@ export async function MentorApprovedBookingAppointments(req, res) {
 
 // update the mentor booking appointment to generate the meeting invite
 export async function UpdateMentorBookingAppointment(req, res, next) {
-  const { bookingId } = req.body;
+  const { bookingId, mentorUserDtlsId, menteeUserDtlsId } = req.body;
   try {
     sql.connect(config, (err, db) => {
       if (err) return res.json({ error: "There is some error while fetching" });
@@ -238,7 +262,30 @@ export async function UpdateMentorBookingAppointment(req, res, next) {
                   slotTime,
                   joinURL
                 );
+                const mentorNotificationHandler = InsertNotificationHandler(
+                  mentorUserDtlsId,
+                  SuccessMsg,
+                  "Appointment confirmed",
+                  "You have confirmed your appointment with " +
+                    menteeName +
+                    " on " +
+                    new Date(mentorBookingStartsTime).toLocaleDateString() +
+                    " at " +
+                    slotTime
+                );
+                const menteeNotificationHandler = InsertNotificationHandler(
+                  menteeUserDtlsId,
+                  SuccessMsg,
+                  "Appointment confirmed by Mentor",
+                  "Mentor has confirmed your appointment with " +
+                    mentorName +
+                    " on " +
+                    new Date(mentorBookingStartsTime).toLocaleDateString() +
+                    " at " +
+                    slotTime
+                );
                 const emailResponse = await sendEmail(msg);
+                return res.json({ success: "Appointment confirmed" });
               }
             }
           );

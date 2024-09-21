@@ -35,7 +35,8 @@ INNER JOIN
     dbo.mentor_booking_appointments_dtls mba ON m.mentor_dtls_id = mba.mentor_dtls_id
 WHERE 
     u.user_dtls_id = @mentorUserDtlsId
-    AND (mba.[mentor_booking_confirmed] = 'No' OR mba.[mentor_booking_confirmed] = 'Yes' and mba.[mentor_session_status] = 'upcoming' AND mba.[trainee_session_status] = 'upcoming');
+    AND (mba.[mentor_booking_confirmed] = 'No' OR mba.[mentor_booking_confirmed] = 'Yes' and mba.[mentor_session_status] = 'upcoming' AND mba.[trainee_session_status] = 'upcoming')
+order by mentor_session_booking_date;
 `;
 // generate the meeting link when mentor approved the session
 export const UpdateMentorBookingAppointmentQuery = `update mentor_booking_appointments_dtls set mentor_booking_confirmed = 'Yes',
