@@ -32,7 +32,15 @@ export async function MenteeRegistration(req, res, next) {
     mentee_InstituteName,
   } = req.body.data;
   const { userType } = req.body;
-
+  const menteeInstituteDetails = [
+    {
+      mentee_courseName: "",
+      mentee_instituteName: mentee_InstituteName,
+      mentee_institute_End_Year: "",
+      mentee_institute_Start_Year: "",
+      mentee_institute_location: "",
+    },
+  ];
   const lowEmail = mentee_Email.toLowerCase();
   const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
   let saltRounds = await bcrypt.genSalt(12);
@@ -79,15 +87,14 @@ export async function MenteeRegistration(req, res, next) {
               request.input(
                 "menteeProfilePic",
                 sql.VarChar,
-                "mentee profile pic"
+                "https://practiwizstorage.blob.core.windows.net/practiwizcontainer/blue-circle-with-white-user_78370-4707.webp"
               );
               request.input(
                 "menteeInstitute",
-                sql.VarChar,
-                mentee_InstituteName
+                sql.Text,
+                JSON.stringify(menteeInstituteDetails)
               );
-              request.input("menteeCrDate", sql.Date, timestamp);
-              request.input("menteeUpDate", sql.Date, timestamp);
+
               request.query(MenteeRegisterQuery, async (err, result) => {
                 if (err) {
                   return res.json({

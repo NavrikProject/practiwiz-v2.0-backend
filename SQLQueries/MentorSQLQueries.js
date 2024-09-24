@@ -28,7 +28,7 @@ export const userDtlsQuery = `
         );
 `;
 
-export const mentorDtlsQuery = `
+export const mentorRegistrationDtlsQuery = `
 INSERT INTO [dbo].[mentor_dtls] (
     [mentor_user_dtls_id],
     [mentor_phone_number],
@@ -52,7 +52,9 @@ INSERT INTO [dbo].[mentor_dtls] (
     [mentor_session_price],
     [mentor_currency_type],
     [mentor_city],
-    [mentor_institute]
+    [mentor_institute],
+    [mentor_area_expertise],
+    [mentor_passion_dtls]
 ) OUTPUT INSERTED.mentor_dtls_id VALUES (
     @mentor_user_dtls_id,
     @mentor_phone_number,
@@ -75,8 +77,10 @@ INSERT INTO [dbo].[mentor_dtls] (
     @mentor_headline,
     @mentor_session_price,
     @mentor_currency,
-    @City
-    @Institute
+    @City,
+    @Institute,
+    @areaOfExpertise,
+    @passionAbout
 );
 `;
 

@@ -5,10 +5,8 @@ export const MenteeRegisterQuery = `
             [mentee_skills],
             [mentee_gender],
             [mentee_type],
-            [mentee_profile],
-            [mentee_institute],
-            [mentee_dtls_cr_date],
-            [mentee_dtls_update_date]
+            [mentee_profile_pic_url],
+            [mentee_institute_details]
         ) OUTPUT INSERTED.mentee_dtls_id VALUES (
             @menteeUserDtlsId,
             @menteeAbout,
@@ -16,8 +14,6 @@ export const MenteeRegisterQuery = `
             @menteeGender,
             @menteeType,
             @menteeProfilePic,
-            @menteeInstitute,
-            @menteeCrDate,
-            @menteeUpDate
+            @menteeInstitute
         );
 `;

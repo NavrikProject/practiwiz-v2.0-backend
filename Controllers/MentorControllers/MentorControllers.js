@@ -14,12 +14,18 @@ import {
   fetchSingleMentorProfileForPublicQuery,
   fetchSingleMentorQuery,
   fetchSingleMentorQueryWithBookings,
-  mentorDtlsQuery,
+  mentorRegistrationDtlsQuery,
   testQuery,
   userDtlsQuery,
 } from "../../SQLQueries/MentorSQLQueries.js";
 import { mentorApplicationEmail } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
 import { ShowTop10MentorsInHomeQuery } from "../../SQLQueries/Mentor/MentorSQLQueries.js";
+import { InsertNotificationHandler } from "../../Middleware/NotificationFunction.js";
+import {
+  AccountCreatedHeading,
+  AccountCreatedMessage,
+  SuccessMsg,
+} from "../../Messages/Messages.js";
 dotenv.config();
 
 // registering of the mentor application
@@ -165,162 +171,127 @@ export async function MentorRegistration(req, res, next) {
               request.input("mentor_currency", sql.VarChar, Currency);
               request.input("City", sql.VarChar, City);
               request.input("Institute", sql.VarChar, Institute);
+              request.input("areaOfExpertise", sql.Text, AreaOfexpertise);
+              request.input("passionAbout", sql.Text, passionateAbout);
+
               // Execute the query
-              request.query(mentorDtlsQuery, async (err, result) => {
-                if (err) {
-                  console.log(
-                    "There is something went wrong. Please try again later.",
-                    err
-                  );
-                  return res.json({ err: err.message });
-                }
-                if (result && result.recordset && result.recordset.length > 0) {
-                  const mentorDtlsId = result.recordset[0].mentor_dtls_id;
-                  // adding area of expertise word in to table
-                  const areaOfExpertiseWords = AreaOfexpertise.split(",");
-                  areaOfExpertiseWords.forEach((word) => {
-                    request.query(
-                      "INSERT INTO mentor_expertise_dtls (mentor_dtls_id, mentor_expertise, mentor_exp_cr_date, mentor_exp_update_date) VALUES('" +
-                        mentorDtlsId +
-                        "','" +
-                        word.trim() +
-                        "','" +
-                        timestamp +
-                        "','" +
-                        timestamp +
-                        "')",
-                      (err, success) => {
-                        if (err) {
-                          return res.json({
-                            error: err.message,
-                          });
-                        }
-                        if (success) {
-                          console.log("Data inserted successfully" + word);
-                        }
-                      }
+              request.query(
+                mentorRegistrationDtlsQuery,
+                async (err, result) => {
+                  if (err) {
+                    console.log(
+                      "There is something went wrong. Please try again later.",
+                      err
                     );
-                  });
-                  // adding the passion about words in to table
-                  //Parse the JSON string into a JavaScript array
-                  const passionData = JSON.parse(passionateAbout);
-                  // Loop through the array and process each object
-                  passionData.forEach((item) => {
-                    request.query(
-                      "INSERT INTO mentor_passion_dtls (mentor_dtls_id, mentor_passion, mentor_passion_cr_date, mentor_passion_update_date) VALUES('" +
-                        mentorDtlsId +
-                        "','" +
-                        item.text +
-                        "','" +
-                        timestamp +
-                        "','" +
-                        timestamp +
-                        "')",
-                      (err, success) => {
-                        if (err) {
-                          return res.json({
-                            error: err.message,
-                          });
-                        }
-                        if (success) {
-                          console.log(
-                            "Passion Data inserted successfully " + item.text
-                          );
-                        }
-                      }
-                    );
-                  });
-                  if (Mon !== "undefined") {
-                    const monDayParsedArray = JSON.parse(Mon);
-                    arrayFunctions(
-                      monDayParsedArray,
-                      mentorDtlsId,
-                      "Mon",
-                      timestamp
-                    );
-                  }
-                  if (Tue !== "undefined") {
-                    const tueDayParsedArray = JSON.parse(Tue);
-                    arrayFunctions(
-                      tueDayParsedArray,
-                      mentorDtlsId,
-                      "Tue",
-                      timestamp
-                    );
-                  }
-                  if (Wed !== "undefined") {
-                    const wedDayParsedArray = JSON.parse(Wed);
-                    arrayFunctions(
-                      wedDayParsedArray,
-                      mentorDtlsId,
-                      "Wed",
-                      timestamp
-                    );
-                  }
-                  if (Thu !== "undefined") {
-                    const thuDayParsedArray = JSON.parse(Thu);
-                    arrayFunctions(
-                      thuDayParsedArray,
-                      mentorDtlsId,
-                      "Wed",
-                      timestamp
-                    );
-                  }
-                  if (Fri !== "undefined") {
-                    const friDayParsedArray = JSON.parse(Fri);
-                    arrayFunctions(
-                      friDayParsedArray,
-                      mentorDtlsId,
-                      "Fri",
-                      timestamp
-                    );
-                  }
-                  if (Sat !== "undefined") {
-                    const satDayParsedArray = JSON.parse(Sat);
-                    arrayFunctions(
-                      satDayParsedArray,
-                      mentorDtlsId,
-                      "Sat",
-                      timestamp
-                    );
-                  }
-                  if (Sun !== "undefined") {
-                    const sunDayParsedArray = JSON.parse(Sun);
-                    arrayFunctions(
-                      sunDayParsedArray,
-                      mentorDtlsId,
-                      "Sun",
-                      timestamp
-                    );
-                  }
-                  const msg = mentorApplicationEmail(
-                    email,
-                    firstName + " " + lastName
-                  );
-                  const response = await sendEmail(msg);
-                  if (
-                    response === "True" ||
-                    response === "true" ||
-                    response === true
-                  ) {
-                    return res.json({
-                      success: "Thank you for applying the mentor application",
-                    });
+                    return res.json({ err: err.message });
                   }
                   if (
-                    response === "False" ||
-                    response === "false" ||
-                    response === false
+                    result &&
+                    result.recordset &&
+                    result.recordset.length > 0
                   ) {
-                    return res.json({
-                      success: "Thank you for applying the mentor application",
-                    });
+                    const mentorDtlsId = result.recordset[0].mentor_dtls_id;
+                    // adding area of expertise word in to table
+                    if (Mon !== "undefined") {
+                      const monDayParsedArray = JSON.parse(Mon);
+                      arrayFunctions(
+                        monDayParsedArray,
+                        mentorDtlsId,
+                        "Mon",
+                        timestamp
+                      );
+                    }
+                    if (Tue !== "undefined") {
+                      const tueDayParsedArray = JSON.parse(Tue);
+                      arrayFunctions(
+                        tueDayParsedArray,
+                        mentorDtlsId,
+                        "Tue",
+                        timestamp
+                      );
+                    }
+                    if (Wed !== "undefined") {
+                      const wedDayParsedArray = JSON.parse(Wed);
+                      arrayFunctions(
+                        wedDayParsedArray,
+                        mentorDtlsId,
+                        "Wed",
+                        timestamp
+                      );
+                    }
+                    if (Thu !== "undefined") {
+                      const thuDayParsedArray = JSON.parse(Thu);
+                      arrayFunctions(
+                        thuDayParsedArray,
+                        mentorDtlsId,
+                        "Wed",
+                        timestamp
+                      );
+                    }
+                    if (Fri !== "undefined") {
+                      const friDayParsedArray = JSON.parse(Fri);
+                      arrayFunctions(
+                        friDayParsedArray,
+                        mentorDtlsId,
+                        "Fri",
+                        timestamp
+                      );
+                    }
+                    if (Sat !== "undefined") {
+                      const satDayParsedArray = JSON.parse(Sat);
+                      arrayFunctions(
+                        satDayParsedArray,
+                        mentorDtlsId,
+                        "Sat",
+                        timestamp
+                      );
+                    }
+                    if (Sun !== "undefined") {
+                      const sunDayParsedArray = JSON.parse(Sun);
+                      arrayFunctions(
+                        sunDayParsedArray,
+                        mentorDtlsId,
+                        "Sun",
+                        timestamp
+                      );
+                    }
+                    const mentorNotificationHandler = InsertNotificationHandler(
+                      userDtlsId,
+                      SuccessMsg,
+                      AccountCreatedHeading,
+                      AccountCreatedMessage
+                    );
+                    const msg = mentorApplicationEmail(
+                      email,
+                      firstName + " " + lastName
+                    );
+                    const response = await sendEmail(msg);
+                    if (
+                      response === "True" ||
+                      response === "true" ||
+                      response === true
+                    ) {
+                      return res.json({
+                        success:
+                          "Thank you for applying the mentor application",
+                      });
+                    }
+                    if (
+                      response === "False" ||
+                      response === "false" ||
+                      response === false
+                    ) {
+                      return res.json({
+                        success:
+                          "Thank you for applying the mentor application",
+                      });
+                    }
+                  } else {
+                    console.error("No record inserted or returned.");
+                    return res.json({ err: "No record inserted or returned." });
                   }
-                } else {
-                  console.error("No record inserted or returned.");
-                  return res.json({ err: "No record inserted or returned." });
                 }
-              });
+              );
             } else {
               console.error("No record inserted or returned.");
               return res.json({ err: "No record inserted or returned." });

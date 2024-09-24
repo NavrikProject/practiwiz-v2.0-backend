@@ -55,7 +55,41 @@ export async function UpdateMenteeProfileDetails(req, res, next) {
   }
 }
 export async function UpdateMenteeEduWorkDetails(req, res, next) {
-  const { menteeUserDtlsId } = req.body;
+  const { menteeUserDtlsId, certificates } = req.body;
+  const {
+    mentee_EduLevel,
+    mentee_instituteName,
+    mentee_courseName,
+    mentee_institute_location,
+    mentee_institute_Start_Year,
+    mentee_institute_End_Year,
+    mentee_Skills,
+    mentee_workexp_CompanyName,
+    mentee_workexp_Role,
+    mentee_workexp_Desc,
+    mentee_workexp_Location,
+    mentee_workexp_Start_Year,
+    mentee_workexp_End_Year,
+  } = req.body.formData;
+  const menteeInstituteDetails = [
+    {
+      mentee_courseName: mentee_courseName,
+      mentee_instituteName: mentee_instituteName,
+      mentee_institute_End_Year: mentee_institute_End_Year,
+      mentee_institute_Start_Year: mentee_institute_Start_Year,
+      mentee_institute_location: mentee_institute_location,
+    },
+  ];
+  const menteeWorkDetails = [
+    {
+      mentee_workexp_CompanyName: mentee_workexp_CompanyName,
+      mentee_workexp_Role: mentee_workexp_Role,
+      mentee_workexp_Desc: mentee_workexp_Desc,
+      mentee_workexp_Location: mentee_workexp_Location,
+      mentee_workexp_Start_Year: mentee_workexp_Start_Year,
+      mentee_workexp_End_Year: mentee_workexp_End_Year,
+    },
+  ];
   try {
     sql.connect(config, (err, db) => {
       if (err)
@@ -64,10 +98,19 @@ export async function UpdateMenteeEduWorkDetails(req, res, next) {
         });
       const request = new sql.Request();
       request.input("menteeUserDtlsId", sql.Int, menteeUserDtlsId);
-      request.input("linkedinUrl", sql.VarChar, mentee_linkedin_link);
-      request.input("instagramUrl", sql.VarChar, mentee_instagram_link);
-      request.input("twitterUrl", sql.VarChar, mentee_Twitter_link);
-      request.input("menteeLanguage", sql.VarChar, mentee_language);
+      request.input("menteeType", sql.VarChar, mentee_EduLevel);
+      request.input("menteeSkills", sql.VarChar, mentee_Skills);
+      request.input(
+        "instituteDetails",
+        sql.Text,
+        JSON.stringify(menteeInstituteDetails)
+      );
+      request.input("certificateDetails", sql.VarChar, certificates);
+      request.input(
+        "experienceDetails",
+        sql.VarChar,
+        JSON.stringify(menteeWorkDetails)
+      );
       request.query(MenteeEduWorkUpdateQuery, async (err, result) => {
         if (err) return res.json({ error: err.message });
         if (result) {
@@ -84,4 +127,8 @@ export async function UpdateMenteeEduWorkDetails(req, res, next) {
   } catch (error) {
     return res.json({ error: error.message });
   }
+}
+
+export async function UpdateMenteeProfilePicture(req, res) {
+  console.log(req.body);
 }

@@ -14,8 +14,14 @@ export const fetchMenteeSingleDashboardQuery = `SELECT
     m.[mentee_skills],
     m.[mentee_gender],
     m.[mentee_type],
-    m.[mentee_profile],
-    m.[mentee_institute],
+    m.[mentee_profile_pic_url],
+    m.[mentee_institute_details],
+    m.[mentee_certificate_details],
+    m.[mentee_experience_details]
+    ,m.[mentee_language],
+    m.[mentee_linkedin_url],
+    m.[mentee_twitter_url],
+    m.[mentee_instagram_url],
     m.[mentee_dtls_update_date],
     (
         SELECT 
