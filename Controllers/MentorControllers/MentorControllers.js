@@ -31,6 +31,7 @@ dotenv.config();
 // registering of the mentor application
 export async function MentorRegistration(req, res, next) {
   const {
+    Mentor_Domain,
     firstName,
     lastName,
     email,
@@ -173,7 +174,7 @@ export async function MentorRegistration(req, res, next) {
               request.input("Institute", sql.VarChar, Institute);
               request.input("areaOfExpertise", sql.Text, AreaOfexpertise);
               request.input("passionAbout", sql.Text, passionateAbout);
-
+              request.input("mentorDomain", sql.VarChar, Mentor_Domain);
               // Execute the query
               request.query(
                 mentorRegistrationDtlsQuery,
@@ -361,7 +362,7 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
   }
 }
 
-// to fetch single mentor and need to pass the user id
+// to fetch single mentor and need to pass the user id in public profile
 export async function fetchSingleMentorDetails(req, res) {
   const id = req.params.id;
   const { userId } = req.body;

@@ -54,7 +54,8 @@ INSERT INTO [dbo].[mentor_dtls] (
     [mentor_city],
     [mentor_institute],
     [mentor_area_expertise],
-    [mentor_passion_dtls]
+    [mentor_passion_dtls],
+    [mentor_domain]
 ) OUTPUT INSERTED.mentor_dtls_id VALUES (
     @mentor_user_dtls_id,
     @mentor_phone_number,
@@ -80,7 +81,8 @@ INSERT INTO [dbo].[mentor_dtls] (
     @City,
     @Institute,
     @areaOfExpertise,
-    @passionAbout
+    @passionAbout,
+    @mentorDomain
 );
 `;
 
@@ -391,7 +393,6 @@ export const fetchSingleMentorProfileForPublicQuery = `SELECT
     u.[user_lastname] as mentor_lastname,
     u.[user_phone_number],
     m.[mentor_dtls_id],
-    m.[mentor_user_dtls_id],
     m.[mentor_email],
     m.[mentor_profile_photo],
     m.[mentor_social_media_profile],
@@ -412,31 +413,9 @@ export const fetchSingleMentorProfileForPublicQuery = `SELECT
     m.[mentor_currency_type],
     m.[mentor_city],
     m.[mentor_institute],
-    (
-        SELECT 
-            e.[mentor_expertise_id],
-            e.[mentor_expertise],
-            e.[mentor_exp_cr_date],
-            e.[mentor_exp_update_date]
-        FROM 
-            [dbo].[mentor_expertise_dtls] e
-        WHERE 
-            e.[mentor_dtls_id] = m.[mentor_dtls_id]
-        FOR JSON PATH
-    ) AS expertise_list,
-    (
-        SELECT 
-            p.[mentor_passion_id],
-            p.[mentor_passion],
-            p.[mentor_passion_cr_date],
-            p.[mentor_passion_update_date],
-            p.[mentor_passion_boolean]
-        FROM 
-            [dbo].[mentor_passion_dtls] p
-        WHERE 
-            p.[mentor_dtls_id] = m.[mentor_dtls_id]
-        FOR JSON PATH
-    ) AS passion_list,
+    m.[mentor_area_expertise],
+    m.[mentor_passion_dtls],
+    m.[mentor_domain],
     (
         SELECT 
             t.[mentor_timeslot_id],
@@ -485,7 +464,7 @@ export const fetchSingleMentorProfileForPublicQuery = `SELECT
             f.[mentor_feedback_add_fb_sugg],
             f.[mentor_feedback_session_overall_rating],
             f.[mentor_feedback_dtls_cr_date],
-            mentee.[mentee_profile],
+            mentee.[mentee_profile_pic_url],
             uma.[user_firstname] as mentee_firstname,
             uma.[user_lastname] as mentee_lastname
         FROM 
