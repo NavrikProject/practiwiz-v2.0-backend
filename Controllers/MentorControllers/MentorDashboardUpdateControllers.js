@@ -13,8 +13,13 @@ import {
 dotenv.config();
 
 export async function MentorUpdateMentorProfile1(req, res) {
-  const { social_media_profile, mentor_country, mentor_city } =
-    req.body.formData;
+  const {
+    social_media_profile,
+    mentor_country,
+    mentor_city,
+    mentor_institute,
+    mentor_academic_qualification,
+  } = req.body.formData;
   const { userDtlsId } = req.body;
   try {
     sql.connect(config, (err) => {
@@ -37,8 +42,14 @@ export async function MentorUpdateMentorProfile1(req, res) {
               sql.VarChar,
               social_media_profile
             );
+            request.input(
+              "mentorQualification",
+              sql.VarChar,
+              mentor_academic_qualification
+            );
+            request.input("mentorInstitute", sql.VarChar, mentor_institute);
             request.query(
-              "update mentor_dtls set mentor_social_media_profile = @mentorLinkedinURL , mentor_country = @mentorCountry, mentor_city = @mentorCity where mentor_user_dtls_id = @mentorUserDtlsId",
+              "update mentor_dtls set mentor_social_media_profile = @mentorLinkedinURL, mentor_country = @mentorCountry,mentor_academic_qualification = @mentorQualification,  mentor_city = @mentorCity, mentor_institute = @mentorInstitute where mentor_user_dtls_id = @mentorUserDtlsId",
               async (err, result) => {
                 if (err) return res.json({ error: err.message });
                 if (result) {
