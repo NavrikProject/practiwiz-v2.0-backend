@@ -64,6 +64,8 @@ export async function MentorRegistration(req, res, next) {
     City,
     Currency,
     Institute,
+    linkedinSign,
+    linkedinPhotoUrl,
   } = req.body;
   const imageData = req.files;
   const lowEmail = email.toLowerCase();
@@ -80,10 +82,13 @@ export async function MentorRegistration(req, res, next) {
       required: "All details must be required",
     });
   }
-  const blobName = new Date().getTime() + "-" + req.files.image.name;
-  const filename = `https://practiwizstorage.blob.core.windows.net/practiwizcontainer/mentorprofilepictures/${blobName}`;
-  uploadMentorPhotoToAzure(imageData, blobName);
-
+  if (linkedinSign !== "linkedin") {
+    const blobName = new Date().getTime() + "-" + req.files.image.name;
+    var filename = `https://practiwizstorage.blob.core.windows.net/practiwizcontainer/mentorprofilepictures/${blobName}`;
+    uploadMentorPhotoToAzure(imageData, blobName);
+  } else {
+    filename = linkedinPhotoUrl;
+  }
   let saltRounds = await bcrypt.genSalt(12);
   let hashedPassword = await bcrypt.hash(password, saltRounds);
 

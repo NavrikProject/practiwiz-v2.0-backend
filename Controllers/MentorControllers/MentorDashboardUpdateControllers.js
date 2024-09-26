@@ -77,20 +77,17 @@ export async function MentorUpdateMentorProfile1(req, res) {
 }
 export async function MentorUpdateMentorProfile2(req, res) {
   const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
-
   const {
-    mentor_job_title,
-    mentor_years_of_experience,
     mentor_company_name,
-    mentor_institute,
-    expertise_list,
-    mentor_recommended_area_of_mentorship,
+    mentor_domain,
     mentor_headline,
-    academic_qualification,
+    mentor_job_title,
+    mentor_passion_dtls,
+    mentor_recommended_area_of_mentorship,
+    mentor_years_of_experience,
   } = req.body.formData;
-  const { userDtlsId } = req.body;
-  const passionAbout = JSON.parse(req.body.passionAboutList);
-  const expertiseData = JSON.parse(expertise_list);
+  const { userDtlsId, expertiseList } = req.body;
+
   try {
     sql.connect(config, (err) => {
       if (err)
@@ -106,131 +103,27 @@ export async function MentorUpdateMentorProfile2(req, res) {
           if (result.recordset.length > 0) {
             const mentorDtlsId = result.recordset[0].mentor_dtls_id;
             request.input("mentorUserDtlsId", sql.Int, userDtlsId);
-            request.input("jobTitle", sql.VarChar, mentor_job_title);
-            request.input(
-              "experience",
-              sql.VarChar,
-              mentor_years_of_experience
-            );
             request.input("companyName", sql.VarChar, mentor_company_name);
-            request.input(
-              "academicQualification",
-              sql.VarChar,
-              academic_qualification
-            );
-            request.input("institute", sql.VarChar, mentor_institute);
+            request.input("mentorDomain", sql.VarChar, mentor_domain);
             request.input("headline", sql.VarChar, mentor_headline);
+            request.input("jobTitle", sql.VarChar, mentor_job_title);
+            request.input("mentorPassion", sql.Text, mentor_passion_dtls);
+            request.input("mentorExpertise", sql.Text, expertiseList);
             request.input(
               "mentorship",
               sql.VarChar,
               mentor_recommended_area_of_mentorship
             );
+            request.input(
+              "experience",
+              sql.VarChar,
+              mentor_years_of_experience
+            );
             request.query(
-              "update mentor_dtls set mentor_job_title = @jobTitle, mentor_years_of_experience = @experience, mentor_company_name = @companyName, mentor_academic_qualification = @academicQualification, mentor_institute = @institute, mentor_recommended_area_of_mentorship = @mentorship, mentor_headline = @headline where mentor_user_dtls_id = @mentorUserDtlsId",
+              "update mentor_dtls set mentor_company_name = @companyName, mentor_domain = @mentorDomain,mentor_headline = @headline, mentor_job_title = @jobTitle, mentor_years_of_experience = @experience,  mentor_recommended_area_of_mentorship = @mentorship,mentor_area_expertise = @mentorExpertise,mentor_passion_dtls = @mentorPassion  where mentor_user_dtls_id = @mentorUserDtlsId",
               async (err, result) => {
                 if (err) return res.json({ error: err.message });
                 if (result) {
-                  expertiseData.forEach((expertise) => {
-                    // First check if the record exists, ignoring case for `mentor_expertise`
-                    request.query(
-                      "SELECT COUNT(*) AS count FROM mentor_expertise_dtls WHERE mentor_dtls_id = '" +
-                        mentorDtlsId +
-                        "' AND LOWER(mentor_expertise) = LOWER('" +
-                        expertise.mentor_expertise.trim() +
-                        "')",
-                      (err, result) => {
-                        if (err) {
-                          return res.json({
-                            error: err.message,
-                          });
-                        }
-                        // If no record exists, insert the new data
-                        if (result.recordset[0].count === 0) {
-                          request.query(
-                            "INSERT INTO mentor_expertise_dtls (mentor_dtls_id, mentor_expertise, mentor_exp_cr_date, mentor_exp_update_date) VALUES('" +
-                              mentorDtlsId +
-                              "','" +
-                              expertise.mentor_expertise.trim() +
-                              "','" +
-                              timestamp +
-                              "','" +
-                              timestamp +
-                              "')",
-                            (err, success) => {
-                              if (err) {
-                                return res.json({
-                                  error: err.message,
-                                });
-                              }
-                              if (success) {
-                                console.log(
-                                  "Data inserted successfully: " +
-                                    expertise.mentor_expertise
-                                );
-                              }
-                            }
-                          );
-                        } else {
-                          console.log(
-                            "Record already exists, skipping insert for: " +
-                              expertise.mentor_expertise
-                          );
-                        }
-                      }
-                    );
-                  });
-                  // adding the passion about words in to table
-                  //Parse the JSON string into a JavaScript array
-                  passionAbout.forEach((item) => {
-                    // First check if the record exists, ignoring case for `mentor_passion`
-                    request.query(
-                      "SELECT COUNT(*) AS count FROM mentor_passion_dtls WHERE mentor_dtls_id = '" +
-                        mentorDtlsId +
-                        "' AND LOWER(mentor_passion) = LOWER('" +
-                        item.text.trim() +
-                        "')",
-                      (err, result) => {
-                        if (err) {
-                          return res.json({
-                            error: err.message,
-                          });
-                        }
-
-                        // If no record exists, insert the new data
-                        if (result.recordset[0].count === 0) {
-                          request.query(
-                            "INSERT INTO mentor_passion_dtls (mentor_dtls_id, mentor_passion, mentor_passion_cr_date, mentor_passion_update_date) VALUES('" +
-                              mentorDtlsId +
-                              "','" +
-                              item.text.trim() +
-                              "','" +
-                              timestamp +
-                              "','" +
-                              timestamp +
-                              "')",
-                            (err, success) => {
-                              if (err) {
-                                return res.json({
-                                  error: err.message,
-                                });
-                              }
-                              if (success) {
-                                console.log(
-                                  "Passion Data inserted successfully: " +
-                                    item.text
-                                );
-                              }
-                            }
-                          );
-                        } else {
-                          console.log(
-                            "Record already exists, skipping insert for passion: " +
-                              item.text
-                          );
-                        }
-                      }
-                    );
-                  });
                   const notificationHandler = await InsertNotificationHandler(
                     userDtlsId,
                     InfoMsg,

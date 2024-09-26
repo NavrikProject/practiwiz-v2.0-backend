@@ -172,6 +172,58 @@ app.get("/test/email", async (req, res) => {
   }
 });
 
+// linked in url
+// Endpoint to exchange the authorization code for an access token
+app.post("/getLinkedInToken", async (req, res) => {
+  const { code } = req.body;
+  try {
+    // Make a request to LinkedIn's OAuth 2.0 token endpoint
+    const tokenResponse = await axios.post(
+      "https://www.linkedin.com/oauth/v2/accessToken",
+      null,
+      {
+        params: {
+          grant_type: "authorization_code",
+          code: code,
+          redirect_uri: `${process.env.FRONT_END_LINK}/auth/linkedin/callback`, // Your LinkedIn app's redirect URI
+          client_id: "86ctoyy9d4ddsn", // Replace with your LinkedIn App's client_id
+          client_secret: "SLIWETcZTm08xciT", // Replace with your LinkedIn App's client_secret
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    // Send access token back to frontend
+    res.json(tokenResponse.data);
+  } catch (error) {
+    console.error("Error fetching access token:", error.message);
+    res.status(500).json({ error: "Failed to fetch access token" });
+  }
+});
+
+// Endpoint to fetch LinkedIn profile data
+app.get("/getLinkedInProfile", async (req, res) => {
+  const accessToken = req.headers.authorization.split(" ")[1]; // Extract Bearer token
+  try {
+    // Fetch LinkedIn profile data using the correct LinkedIn API endpoint
+    const profileResponse = await axios.get(
+      "https://api.linkedin.com/v2/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // Send profile data back to frontend
+    res.json(profileResponse.data);
+  } catch (error) {
+    console.error("Error fetching profile data:", error.message);
+    res.status(500).json({ error: "Failed to fetch profile data" });
+  }
+});
 // Start the server
 app.listen(port, () => {
   console.log(`Running on port http://localhost:${port}`);
