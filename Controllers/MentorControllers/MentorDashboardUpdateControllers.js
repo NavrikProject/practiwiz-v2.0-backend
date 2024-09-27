@@ -9,7 +9,12 @@ import {
   InfoMsg,
   MentorProfileChangedMessage,
   MentorProfileHeading,
+  SuccessMsg,
 } from "../../Messages/Messages.js";
+import {
+  sendEmail,
+  uploadMentorPhotoToAzure,
+} from "../../Middleware/AllFunctions.js";
 dotenv.config();
 
 export async function MentorUpdateMentorProfile1(req, res) {
@@ -388,5 +393,43 @@ export async function MentorUpdateMentorProfile4(req, res) {
     return res.json({
       error: "There is some error while updating the Mentor profile",
     });
+  }
+}
+export async function UpdateMentorProfilePicture(req, res) {
+  const { mentorUserDtlsId } = req.body;
+  if (!req.files.image) {
+    return res.json({ error: "Please select a file to upload" });
+  } else {
+    try {
+      const blobName = new Date().getTime() + "-" + req.files.image.name;
+      var fileName = `https://practiwizstorage.blob.core.windows.net/practiwizcontainer/mentorprofilepictures/${blobName}`;
+      uploadMentorPhotoToAzure(req.files, blobName);
+      sql.connect(config, (err, db) => {
+        if (err)
+          return res.json({
+            error: "There is some error while updating the profile details",
+          });
+        const request = new sql.Request();
+        request.input("mentorUserDtlsId", sql.Int, mentorUserDtlsId);
+        request.input("mentorProfileUrl", sql.VarChar, fileName);
+        request.query(
+          "update mentor_dtls set mentor_profile_photo = @mentorProfileUrl where mentor_user_dtls_id = @mentorUserDtlsId",
+          async (err, result) => {
+            if (err) return res.json({ error: err.message });
+            if (result) {
+              const notification = await InsertNotificationHandler(
+                mentorUserDtlsId,
+                SuccessMsg,
+                MentorProfileHeading,
+                MentorProfileChangedMessage
+              );
+              return res.json({ success: "Successfully updated the profile" });
+            }
+          }
+        );
+      });
+    } catch (error) {
+      return res.json({ error: error.message });
+    }
   }
 }

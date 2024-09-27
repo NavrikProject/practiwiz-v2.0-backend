@@ -3,16 +3,20 @@ import jwt from "jsonwebtoken";
 import sql from "mssql";
 import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
-import { sendEmail } from "../../Middleware/AllFunctions.js";
+import {
+  sendEmail,
+  uploadMentorPhotoToAzure,
+} from "../../Middleware/AllFunctions.js";
 import moment from "moment";
 import { InsertNotificationHandler } from "../../Middleware/NotificationFunction.js";
 import {
   MenteeProfileChangedMessage,
-  MentorProfileHeading,
+  MenteeProfileHeading,
   SuccessMsg,
 } from "../../Messages/Messages.js";
 import {
   MenteeEduWorkUpdateQuery,
+  MenteeProfilePictureUpdateQuery,
   MenteeProfileUpdateQuery,
 } from "../../SQLQueries/Mentee/MenteeProfileSqlQueries.js";
 dotenv.config();
@@ -23,6 +27,8 @@ export async function UpdateMenteeProfileDetails(req, res, next) {
     mentee_linkedin_link,
     mentee_Twitter_link,
     mentee_language,
+    mentee_gender,
+    mentee_aboutyouself,
   } = req.body.formData;
   const { menteeUserDtlsId } = req.body;
   try {
@@ -37,13 +43,16 @@ export async function UpdateMenteeProfileDetails(req, res, next) {
       request.input("instagramUrl", sql.VarChar, mentee_instagram_link);
       request.input("twitterUrl", sql.VarChar, mentee_Twitter_link);
       request.input("menteeLanguage", sql.VarChar, mentee_language);
+      request.input("menteeGender", sql.VarChar, mentee_gender);
+      request.input("menteeAbout", sql.VarChar, mentee_aboutyouself);
+
       request.query(MenteeProfileUpdateQuery, async (err, result) => {
         if (err) return res.json({ error: err.message });
         if (result) {
           const notification = await InsertNotificationHandler(
             menteeUserDtlsId,
             SuccessMsg,
-            MentorProfileHeading,
+            MenteeProfileHeading,
             MenteeProfileChangedMessage
           );
           return res.json({ success: "Successfully updated the profile" });
@@ -117,7 +126,7 @@ export async function UpdateMenteeEduWorkDetails(req, res, next) {
           const notification = await InsertNotificationHandler(
             menteeUserDtlsId,
             SuccessMsg,
-            MentorProfileHeading,
+            MenteeProfileHeading,
             MenteeProfileChangedMessage
           );
           return res.json({ success: "Successfully updated the profile" });
@@ -130,5 +139,37 @@ export async function UpdateMenteeEduWorkDetails(req, res, next) {
 }
 
 export async function UpdateMenteeProfilePicture(req, res) {
-  console.log(req.body);
+  const { menteeUserDtlsId } = req.body;
+  if (!req.files.image) {
+    return res.json({ error: "Please select a file to upload" });
+  } else {
+    try {
+      const blobName = new Date().getTime() + "-" + req.files.image.name;
+      var fileName = `https://practiwizstorage.blob.core.windows.net/practiwizcontainer/mentorprofilepictures/${blobName}`;
+      uploadMentorPhotoToAzure(req.files, blobName);
+      sql.connect(config, (err, db) => {
+        if (err)
+          return res.json({
+            error: "There is some error while updating the profile details",
+          });
+        const request = new sql.Request();
+        request.input("menteeUserDtlsId", sql.Int, menteeUserDtlsId);
+        request.input("menteeProfileUrl", sql.VarChar, fileName);
+        request.query(MenteeProfilePictureUpdateQuery, async (err, result) => {
+          if (err) return res.json({ error: err.message });
+          if (result) {
+            const notification = await InsertNotificationHandler(
+              menteeUserDtlsId,
+              SuccessMsg,
+              MenteeProfileHeading,
+              MenteeProfileChangedMessage
+            );
+            return res.json({ success: "Successfully updated the profile" });
+          }
+        });
+      });
+    } catch (error) {
+      return res.json({ error: error.message });
+    }
+  }
 }

@@ -172,7 +172,7 @@ app.get("/test/email", async (req, res) => {
   }
 });
 
-// linked in url
+// linked in url added
 // Endpoint to exchange the authorization code for an access token
 app.post("/getLinkedInToken", async (req, res) => {
   const { code } = req.body;

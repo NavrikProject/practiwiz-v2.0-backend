@@ -9,6 +9,8 @@ export const MentorApprovedMsg = `Successfully you have been approved as a Mento
 export const PasswordChangedHeading = `Password changed`;
 export const ResetPasswordHeading = `Reset Password`;
 export const MentorProfileHeading = "Profile Details";
+export const MenteeProfileHeading = "Profile Details";
+
 export const AccountCreatedHeading = "Account created";
 export const MentorDisApprovedHeading = `Not Approved as a Mentor`;
 export const CaseStudySubmittedHeading = "Case study submitted";
@@ -19,8 +21,8 @@ export const ResetPasswordMessage =
   "The reset password email has been successfully sent to the email address.";
 export const MentorProfileChangedMessage =
   "Successfully you have updated the mentor profile details.";
-  export const MenteeProfileChangedMessage =
-    "Successfully you have updated the mentor profile details.";
+export const MenteeProfileChangedMessage =
+  "Successfully you have updated the mentee profile details.";
 export const AccountCreatedMessage =
   "Successfully you have created the account";
 export const CaseStudySubmittedMessage =
