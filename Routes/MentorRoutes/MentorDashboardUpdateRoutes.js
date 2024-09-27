@@ -4,6 +4,7 @@ import {
   MentorUpdateMentorProfile2,
   MentorUpdateMentorProfile3,
   MentorUpdateMentorProfile4,
+  UpdateMentorProfilePicture,
 } from "../../Controllers/MentorControllers/MentorDashboardUpdateControllers.js";
 import { verifyUserToken } from "../../Middleware/Authentication.js";
 
@@ -16,5 +17,7 @@ router.post("/profile-2", verifyUserToken, MentorUpdateMentorProfile2);
 router.post("/profile-3", verifyUserToken, MentorUpdateMentorProfile3);
 
 router.post("/profile-4", verifyUserToken, MentorUpdateMentorProfile4);
+
+router.post("/profile-picture", verifyUserToken, UpdateMentorProfilePicture);
 
 export default router;
