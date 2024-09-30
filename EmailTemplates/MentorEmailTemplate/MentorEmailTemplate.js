@@ -112,7 +112,7 @@ export const mentorApplicationEmail = (mentorEmail, mentorName) => {
   };
 };
 // mentor approve email
-export const mentorApprovedEmailTemplate = (mentorEmail, username) => {
+export const mentorApprovedEmailTemplateOld = (mentorEmail, username) => {
   return {
     to: `${mentorEmail}`, // Change to your recipient
     from: "no-reply@practiwiz.com", // Change to your verified sender
@@ -202,6 +202,94 @@ export const mentorApprovedEmailTemplate = (mentorEmail, username) => {
       <img
         src="https://via.placeholder.com/150x50?text=Practiwiz+Footer+Logo"
         alt="Practiwiz Footer Logo"
+        style="max-width: 120px;"
+      />
+    </div>
+  </div>
+</section>
+    `,
+  };
+};
+
+// mentor approve email
+export const mentorApprovedEmailTemplate = (mentorEmail, username) => {
+  return {
+    to: `${mentorEmail}`, // Change to your recipient
+    from: "no-reply@practiwiz.com", // Change to your verified sender
+    subject: "You are ready to start your mentorship journey🎉🎊",
+    html: `
+<section
+  style="
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f8fb;
+    padding: 50px 0;
+  "
+>
+  <div
+    style="
+      max-width: 600px;
+      margin: auto;
+      padding: 40px;
+      background-color: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    "
+  >
+    <div style="text-align: center; margin-bottom: 30px;">
+      <img
+        src="https://practiwizstorage.blob.core.windows.net/practiwizcontainer/logo.jpg"
+        alt="Practywiz Logo"
+        style="max-width: 160px; margin-bottom: 20px;"
+      />
+      <h2
+        style="
+          font-size: 24px;
+          text-transform: uppercase;
+          color: #2c3e50;
+          margin: 0;
+        "
+      >
+        Welcome to Practywiz
+      </h2>
+      <hr style="width: 80px; border: 1px solid #1abc9c; margin: 20px auto;" />
+    </div>
+    <!-- Greeting and Introduction -->
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      Hi <b>${username}</b>,
+    </p>
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      We are excited to welcome you as a mentor! Your expertise will greatly benefit our community, and we can’t wait to see the impact you’ll make. As a mentor, you’ll earn compensation for each session you host on our platform.
+    </p>
+    
+    <!-- Call to Action Image -->
+    <div style="text-align: center; margin: 30px 0;">
+      <img src="https://practiwizstorage.blob.core.windows.net/practiwizcontainer/getting started.jpg" alt="Get Started" style="width: 100%;height:300px; border-radius: 8px;"/>
+    </div>
+    
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      At <b>Practywiz</b>, we’re dedicated to supporting both mentors and mentee(Professionals and Students). Our platform empowers you to share your knowledge effectively, and we’re here to ensure your success every step of the way.
+    </p>
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      Remember, once you start hosting sessions, you can increase your earnings by gaining referrals.
+    </p>
+    
+    <!-- Support Section -->
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      If you have any questions or need support, don’t hesitate to reach out to us at <a href="mailto:wecare@practywiz.com" style="color: #008080; text-decoration: none;">wecare@practywiz.com</a>. We’re here to help!
+    </p>
+    
+    <!-- Closing and Signature -->
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      Best of luck in your mentorship journey!
+    </p>
+    <p style="font-size: 16px; line-height: 1.8; color: #333333; margin-top: 40px;">
+      Best Regards,<br />The Practywiz Team
+    </p>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <img
+        src="https://practiwizstorage.blob.core.windows.net/practiwizcontainer/logo.jpg"
+        alt="practywiz Footer Logo"
         style="max-width: 120px;"
       />
     </div>

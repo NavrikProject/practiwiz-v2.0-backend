@@ -10,6 +10,7 @@ import {
   UpdateMentorToDisapprove,
 } from "../../Controllers/AdminDashboardControllers/AdminDashboardControllers.js";
 import { verifyAdminTokenAndAuthorization } from "../../Middleware/Authentication.js";
+import { fetchSingleMentorPrivateDetails } from "../../Controllers/AdminDashboardControllers/AdminMentotPrivateProfileControllers.js";
 let router = routers.Router();
 
 //login
@@ -30,7 +31,11 @@ router.get(
   verifyAdminTokenAndAuthorization,
   getAllNotApprovedMentorsListAdminDashboard
 );
-
+router.get(
+  "/mentors/private-profile/:id",
+  verifyAdminTokenAndAuthorization,
+  fetchSingleMentorPrivateDetails
+);
 router.post("/mentors/update/not-approve", UpdateMentorToDisapprove);
 router.post("/mentors/update/approve", UpdateMentorToApprove);
 
