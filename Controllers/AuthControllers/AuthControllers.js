@@ -8,19 +8,22 @@ import sgMail from "@sendgrid/mail";
 import { userDtlsQuery } from "../../SQLQueries/MentorSQLQueries.js";
 import { sendEmail } from "../../Middleware/AllFunctions.js";
 import {
+  mentorAccountCreatedEmailTemplate,
   passwordUpdateEmailTemplate,
-  resetPasswordEmailTemplate,
 } from "../../EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
 import { InsertNotificationHandler } from "../../Middleware/NotificationFunction.js";
 import {
+  AccountCreatedHeading,
+  AccountCreatedMessage,
   InfoMsg,
   PasswordChangedHeading,
   PasswordChangedMessage,
   ResetPasswordHeading,
   ResetPasswordMessage,
+  SuccessMsg,
 } from "../../Messages/Messages.js";
 dotenv.config();
-
+import { MentorUserFIrstRegDtlsQuery } from "../../SQLQueries/Auth/AuthSQLqueries.js";
 // user registration status table insert
 
 export async function UserRegistrationStatus(req, res) {
@@ -70,6 +73,86 @@ export async function UserRegistrationStatus(req, res) {
       error: error.message,
     });
   }
+}
+
+export async function MentorFirstRegister(req, res) {
+  const { firstname, lastName, phoneNumber, emailId } = req.body;
+  const lowEmail = emailId.toLowerCase();
+  const capitalizedString = capitalizeFirstLetter(firstname);
+  const hashedPassword = await bcrypt.hash(capitalizedString + "@12", 12);
+  try {
+    sql.connect(config, async (err) => {
+      if (err) {
+        return res.send({ error: "There is something wrong!" });
+      }
+      const request = new sql.Request();
+      request.input("email", sql.VarChar, lowEmail);
+      request.query(
+        "select user_email from users_dtls where user_email = @email",
+        (err, result) => {
+          if (err) return res.json({ error: "There is something wrong!" });
+          if (result.recordset.length > 0) {
+            return res.json({
+              error:
+                "This email address is already in use, Please use another email address or Login in to update the mentor details in Dashboard.",
+            });
+          } else {
+            const request = new sql.Request();
+            // Add input parameters
+            request.input("user_email", sql.VarChar, lowEmail);
+            request.input("user_pwd", sql.VarChar, hashedPassword);
+            request.input("user_firstname", sql.VarChar, firstname);
+            request.input("user_lastname", sql.VarChar, lastName);
+            request.input("user_phone_number", sql.VarChar, phoneNumber);
+            request.input("user_type", sql.VarChar, "mentor");
+            request.input("user_status", sql.VarChar, "1");
+            // Execute the query
+            request.query(MentorUserFIrstRegDtlsQuery, async (err, result) => {
+              if (err) {
+                return res.json({ error: err.message });
+              }
+              if (result && result.recordset && result.recordset.length > 0) {
+                const userDtlsId = result.recordset[0].user_dtls_id;
+                const mentorNotificationHandler = InsertNotificationHandler(
+                  userDtlsId,
+                  SuccessMsg,
+                  AccountCreatedHeading,
+                  AccountCreatedMessage
+                );
+                const msg = mentorAccountCreatedEmailTemplate(
+                  lowEmail,
+                  firstname + " " + lastName,
+                  capitalizedString + "@12"
+                );
+                const response = await sendEmail(msg);
+                if (
+                  response === "True" ||
+                  response === "true" ||
+                  response === true
+                ) {
+                  return res.json({ success: "success" });
+                }
+                if (
+                  response === "False" ||
+                  response === "false" ||
+                  response === false
+                ) {
+                  return res.json({ success: "success" });
+                }
+              }
+            });
+          }
+        }
+      );
+    });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
+function capitalizeFirstLetter(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 // logging in to the portal
 export async function login(req, res) {
@@ -153,7 +236,6 @@ export async function changeUserPassword(req, res, next) {
   const saltRounds = await bcrypt.genSalt(12);
   console.log(saltRounds);
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  console.log(hashedPassword);
   try {
     sql.connect(config, async (err) => {
       if (err)

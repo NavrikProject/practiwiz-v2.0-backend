@@ -98,214 +98,147 @@ export async function MentorRegistration(req, res, next) {
     }
     const request = new sql.Request();
     request.input("email", sql.VarChar, lowEmail);
-    request.query(
-      "select user_email from users_dtls where user_email = @email",
-      (err, result) => {
-        if (err) return res.json({ error: err.message });
-        if (result.recordset.length > 0) {
-          return res.json({
-            error:
-              "This email address is already in use, Please use another email address",
-          });
-        } else {
-          const request = new sql.Request();
-          // Add input parameters
-          request.input("user_email", sql.VarChar, email);
-          request.input("user_pwd", sql.VarChar, hashedPassword);
-          request.input("user_firstname", sql.VarChar, firstName);
-          request.input("user_lastname", sql.VarChar, lastName);
-          request.input("user_phone_number", sql.VarChar, phoneNumber);
-          request.input("user_status", sql.VarChar, "1");
-          request.input("user_modified_by", sql.VarChar, "Admin");
-          request.input("user_type", sql.VarChar, UserType);
-          request.input("user_is_superadmin", sql.VarChar, "0");
-          request.input("user_logindate", sql.Date, timestamp);
-          request.input("user_logintime", sql.Date, timestamp);
-          request.input("user_token", sql.VarChar, "");
-          // Execute the query
-          request.query(userDtlsQuery, (err, result) => {
-            if (err) {
-              return res.json({ error: err.message });
-            }
-            if (result && result.recordset && result.recordset.length > 0) {
-              const userDtlsId = result.recordset[0].user_dtls_id;
-              // Add input parameters
-              request.input("mentor_user_dtls_id", sql.Int, userDtlsId);
-              request.input("mentor_phone_number", sql.VarChar, phoneNumber);
-              request.input("mentor_email", sql.VarChar, email);
-              request.input("mentor_profile_photo", sql.VarChar, filename);
-              request.input(
-                "mentor_social_media_profile",
-                sql.VarChar,
-                sociallink
-              );
-              request.input("mentor_job_title", sql.VarChar, jobtitle);
-              request.input("mentor_company_name", sql.VarChar, companyName);
-              request.input("mentor_years_of_experience", sql.Int, experience);
-              request.input(
-                "mentor_academic_qualification",
-                sql.VarChar,
-                academicQualification
-              );
-              request.input(
-                "mentor_recommended_area_of_mentorship",
-                sql.VarChar,
-                areaofmentorship
-              );
-              request.input(
-                "mentor_guest_lectures_interest",
-                sql.VarChar,
-                lecturesInterest
-              );
-              request.input(
-                "mentor_curating_case_studies_interest",
-                sql.VarChar,
-                caseInterest
-              );
-              request.input(
-                "mentor_sessions_free_of_charge",
-                sql.VarChar,
-                freeCharge
-              );
-              request.input("mentor_language", sql.VarChar, Language);
-              request.input("mentor_timezone", sql.VarChar, Timezone);
-              request.input("mentor_country", sql.VarChar, Country);
-              request.input("mentor_dtls_cr_date", sql.DateTime, timestamp);
-              request.input("mentor_dtls_update_date", sql.DateTime, timestamp);
-              request.input("mentor_headline", sql.VarChar, headline);
-              request.input("mentor_session_price", sql.VarChar, Pricing);
-              request.input("mentor_currency", sql.VarChar, Currency);
-              request.input("City", sql.VarChar, City);
-              request.input("Institute", sql.VarChar, Institute);
-              request.input("areaOfExpertise", sql.Text, AreaOfexpertise);
-              request.input("passionAbout", sql.Text, passionateAbout);
-              request.input("mentorDomain", sql.VarChar, Mentor_Domain);
-              // Execute the query
-              request.query(
-                mentorRegistrationDtlsQuery,
-                async (err, result) => {
-                  if (err) {
-                    console.log(
-                      "There is something went wrong. Please try again later.",
-                      err
-                    );
-                    return res.json({ err: err.message });
-                  }
-                  if (
-                    result &&
-                    result.recordset &&
-                    result.recordset.length > 0
-                  ) {
-                    const mentorDtlsId = result.recordset[0].mentor_dtls_id;
-                    // adding area of expertise word in to table
-                    if (Mon !== "undefined") {
-                      const monDayParsedArray = JSON.parse(Mon);
-                      arrayFunctions(
-                        monDayParsedArray,
-                        mentorDtlsId,
-                        "Mon",
-                        timestamp
-                      );
-                    }
-                    if (Tue !== "undefined") {
-                      const tueDayParsedArray = JSON.parse(Tue);
-                      arrayFunctions(
-                        tueDayParsedArray,
-                        mentorDtlsId,
-                        "Tue",
-                        timestamp
-                      );
-                    }
-                    if (Wed !== "undefined") {
-                      const wedDayParsedArray = JSON.parse(Wed);
-                      arrayFunctions(
-                        wedDayParsedArray,
-                        mentorDtlsId,
-                        "Wed",
-                        timestamp
-                      );
-                    }
-                    if (Thu !== "undefined") {
-                      const thuDayParsedArray = JSON.parse(Thu);
-                      arrayFunctions(
-                        thuDayParsedArray,
-                        mentorDtlsId,
-                        "Wed",
-                        timestamp
-                      );
-                    }
-                    if (Fri !== "undefined") {
-                      const friDayParsedArray = JSON.parse(Fri);
-                      arrayFunctions(
-                        friDayParsedArray,
-                        mentorDtlsId,
-                        "Fri",
-                        timestamp
-                      );
-                    }
-                    if (Sat !== "undefined") {
-                      const satDayParsedArray = JSON.parse(Sat);
-                      arrayFunctions(
-                        satDayParsedArray,
-                        mentorDtlsId,
-                        "Sat",
-                        timestamp
-                      );
-                    }
-                    if (Sun !== "undefined") {
-                      const sunDayParsedArray = JSON.parse(Sun);
-                      arrayFunctions(
-                        sunDayParsedArray,
-                        mentorDtlsId,
-                        "Sun",
-                        timestamp
-                      );
-                    }
-                    const mentorNotificationHandler = InsertNotificationHandler(
-                      userDtlsId,
-                      SuccessMsg,
-                      AccountCreatedHeading,
-                      AccountCreatedMessage
-                    );
-                    const msg = mentorApplicationEmail(
-                      email,
-                      firstName + " " + lastName
-                    );
-                    const response = await sendEmail(msg);
-                    if (
-                      response === "True" ||
-                      response === "true" ||
-                      response === true
-                    ) {
-                      return res.json({
-                        success:
-                          "Thank you for applying the mentor application",
-                      });
-                    }
-                    if (
-                      response === "False" ||
-                      response === "false" ||
-                      response === false
-                    ) {
-                      return res.json({
-                        success:
-                          "Thank you for applying the mentor application",
-                      });
-                    }
-                  } else {
-                    console.error("No record inserted or returned.");
-                    return res.json({ err: "No record inserted or returned." });
-                  }
-                }
-              );
-            } else {
-              console.error("No record inserted or returned.");
-              return res.json({ err: "No record inserted or returned." });
-            }
-          });
-        }
+    // Add input parameters
+    request.input("user_email", sql.VarChar, email);
+    request.input("user_pwd", sql.VarChar, hashedPassword);
+    request.input("user_firstname", sql.VarChar, firstName);
+    request.input("user_lastname", sql.VarChar, lastName);
+    request.input("user_phone_number", sql.VarChar, phoneNumber);
+    request.input("user_status", sql.VarChar, "1");
+    request.input("user_type", sql.VarChar, UserType);
+    // Execute the query
+    request.query(userDtlsQuery, (err, result) => {
+      if (err) {
+        return res.json({ error: err.message });
       }
-    );
+      if (result && result.recordset && result.recordset.length > 0) {
+        const userDtlsId = result.recordset[0].user_dtls_id;
+        // Add input parameters
+        request.input("mentor_user_dtls_id", sql.Int, userDtlsId);
+        request.input("mentor_phone_number", sql.VarChar, phoneNumber);
+        request.input("mentor_email", sql.VarChar, email);
+        request.input("mentor_profile_photo", sql.VarChar, filename);
+        request.input("mentor_social_media_profile", sql.VarChar, sociallink);
+        request.input("mentor_job_title", sql.VarChar, jobtitle);
+        request.input("mentor_company_name", sql.VarChar, companyName);
+        request.input("mentor_years_of_experience", sql.Int, experience);
+        request.input(
+          "mentor_academic_qualification",
+          sql.VarChar,
+          academicQualification
+        );
+        request.input(
+          "mentor_recommended_area_of_mentorship",
+          sql.VarChar,
+          areaofmentorship
+        );
+        request.input(
+          "mentor_guest_lectures_interest",
+          sql.VarChar,
+          lecturesInterest
+        );
+        request.input(
+          "mentor_curating_case_studies_interest",
+          sql.VarChar,
+          caseInterest
+        );
+        request.input(
+          "mentor_sessions_free_of_charge",
+          sql.VarChar,
+          freeCharge
+        );
+        request.input("mentor_language", sql.VarChar, Language);
+        request.input("mentor_timezone", sql.VarChar, Timezone);
+        request.input("mentor_country", sql.VarChar, Country);
+        request.input("mentor_dtls_cr_date", sql.DateTime, timestamp);
+        request.input("mentor_dtls_update_date", sql.DateTime, timestamp);
+        request.input("mentor_headline", sql.VarChar, headline);
+        request.input("mentor_session_price", sql.VarChar, Pricing);
+        request.input("mentor_currency", sql.VarChar, Currency);
+        request.input("City", sql.VarChar, City);
+        request.input("Institute", sql.VarChar, Institute);
+        request.input("areaOfExpertise", sql.Text, AreaOfexpertise);
+        request.input("passionAbout", sql.Text, passionateAbout);
+        request.input("mentorDomain", sql.VarChar, Mentor_Domain);
+        // Execute the query
+        request.query(mentorRegistrationDtlsQuery, async (err, result) => {
+          if (err) {
+            console.log(
+              "There is something went wrong. Please try again later.",
+              err
+            );
+            return res.json({ err: err.message });
+          }
+          if (result && result.recordset && result.recordset.length > 0) {
+            const mentorDtlsId = result.recordset[0].mentor_dtls_id;
+            // adding area of expertise word in to table
+            if (Mon !== "undefined") {
+              const monDayParsedArray = JSON.parse(Mon);
+              arrayFunctions(monDayParsedArray, mentorDtlsId, "Mon", timestamp);
+            }
+            if (Tue !== "undefined") {
+              const tueDayParsedArray = JSON.parse(Tue);
+              arrayFunctions(tueDayParsedArray, mentorDtlsId, "Tue", timestamp);
+            }
+            if (Wed !== "undefined") {
+              const wedDayParsedArray = JSON.parse(Wed);
+              arrayFunctions(wedDayParsedArray, mentorDtlsId, "Wed", timestamp);
+            }
+            if (Thu !== "undefined") {
+              const thuDayParsedArray = JSON.parse(Thu);
+              arrayFunctions(thuDayParsedArray, mentorDtlsId, "Wed", timestamp);
+            }
+            if (Fri !== "undefined") {
+              const friDayParsedArray = JSON.parse(Fri);
+              arrayFunctions(friDayParsedArray, mentorDtlsId, "Fri", timestamp);
+            }
+            if (Sat !== "undefined") {
+              const satDayParsedArray = JSON.parse(Sat);
+              arrayFunctions(satDayParsedArray, mentorDtlsId, "Sat", timestamp);
+            }
+            if (Sun !== "undefined") {
+              const sunDayParsedArray = JSON.parse(Sun);
+              arrayFunctions(sunDayParsedArray, mentorDtlsId, "Sun", timestamp);
+            }
+            const mentorNotificationHandler = InsertNotificationHandler(
+              userDtlsId,
+              SuccessMsg,
+              AccountCreatedHeading,
+              AccountCreatedMessage
+            );
+            const msg = mentorApplicationEmail(
+              email,
+              firstName + " " + lastName
+            );
+            const response = await sendEmail(msg);
+            if (
+              response === "True" ||
+              response === "true" ||
+              response === true
+            ) {
+              return res.json({
+                success: "Thank you for applying the mentor application",
+              });
+            }
+            if (
+              response === "False" ||
+              response === "false" ||
+              response === false
+            ) {
+              return res.json({
+                success: "Thank you for applying the mentor application",
+              });
+            }
+          } else {
+            console.error("No record inserted or returned.");
+            return res.json({ err: "No record inserted or returned." });
+          }
+        });
+      } else {
+        console.error("No record inserted or returned.");
+        return res.json({ err: "No record inserted or returned." });
+      }
+    });
   });
 }
 

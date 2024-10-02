@@ -108,6 +108,7 @@ export async function createMentorBookingAppointment(req, res, next) {
     mentorUserDtlsId,
     mentorName,
     username,
+    timeSlotId,
   } = req.body;
   const { questions, selected } = req.body.data;
   let ChangedDate = new Date(
@@ -146,6 +147,7 @@ export async function createMentorBookingAppointment(req, res, next) {
         request.input("mentorHostUrl", sql.VarChar, "Mentor host url");
         request.input("traineeJoinUrl", sql.VarChar, "trainee join url");
         request.input("mentorAmountPaidStatus", sql.VarChar, "Yes");
+        request.input("mentorTimeslotId", sql.Int, timeSlotId);
         request.query(MentorBookingAppointmentQuery, async (err, result) => {
           if (err) {
             return res.json({
