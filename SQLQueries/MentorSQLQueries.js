@@ -1,31 +1,32 @@
 export const userDtlsQuery = `
-          INSERT INTO [dbo].[users_dtls] (
-            [user_email],
-            [user_pwd],
-            [user_firstname],
-            [user_lastname],
-            [user_phone_number],
-            [user_status],
-            [user_modified_by],
-            [user_type],
-            [user_is_superadmin],
-            [user_logindate],
-            [user_logintime],
-            [user_token]
-        ) OUTPUT INSERTED.user_dtls_id VALUES (
-            @user_email,
-            @user_pwd,
-            @user_firstname,
-            @user_lastname,
-            @user_phone_number,
-            @user_status,
-            @user_modified_by,
-            @user_type,
-            @user_is_superadmin,
-            @user_logindate,
-            @user_logintime,
-            @user_token
-        );
+    MERGE INTO [dbo].[users_dtls] AS target
+    USING (VALUES 
+        (@user_email, @user_pwd, @user_firstname, @user_lastname, 
+        @user_phone_number, @user_status, 
+        @user_type)
+    ) AS source (user_email, user_pwd, user_firstname, user_lastname, 
+                user_phone_number, user_status, 
+                user_type)
+    ON (target.user_email = source.user_email)
+    -- Update if exists
+    WHEN MATCHED THEN 
+        UPDATE SET 
+            target.user_pwd = source.user_pwd,
+            target.user_firstname = source.user_firstname,
+            target.user_lastname = source.user_lastname,
+            target.user_phone_number = source.user_phone_number,
+            target.user_status = source.user_status,
+            target.user_type = source.user_type
+    -- Insert if not exists
+    WHEN NOT MATCHED THEN 
+        INSERT ([user_email], [user_pwd], [user_firstname], 
+                [user_lastname], [user_phone_number], 
+                [user_status],[user_type])
+        VALUES (source.user_email, source.user_pwd, 
+                source.user_firstname, source.user_lastname, 
+                source.user_phone_number, source.user_status,source.user_type )
+    -- Output the inserted/updated record ID
+    OUTPUT inserted.user_dtls_id;
 `;
 
 export const mentorRegistrationDtlsQuery = `
@@ -177,82 +178,71 @@ WHERE
 AND
     m.[mentor_approved_status] = 'Yes'
 `;
-// fetch all mentor queries
+// fetch all mentor queries in the mentor club for card
 export const fetchAllMentorQuery = `SELECT 
     u.[user_dtls_id],
     u.[user_email],
     u.[user_firstname],
     u.[user_lastname],
-    u.[user_phone_number],
-    u.[user_type],
-    u.[user_is_superadmin],
     m.[mentor_dtls_id],
-    m.[mentor_user_dtls_id],
     m.[mentor_phone_number],
-    m.[mentor_email],
     m.[mentor_profile_photo],
-    m.[mentor_social_media_profile],
     m.[mentor_job_title],
     m.[mentor_company_name],
     m.[mentor_years_of_experience],
     m.[mentor_academic_qualification],
-    m.[mentor_recommended_area_of_mentorship],
-    m.[mentor_guest_lectures_interest],
-    m.[mentor_curating_case_studies_interest],
-    m.[mentor_sessions_free_of_charge],
     m.[mentor_language],
     m.[mentor_timezone],
     m.[mentor_country],
-    m.[mentor_dtls_cr_date],
-    m.[mentor_dtls_update_date],
-    m.[mentor_headline],
-    m.[mentor_approved_status],
     m.[mentor_session_price],
     m.[mentor_currency_type],
     m.[mentor_city],
     m.[mentor_institute],
-    (
-        SELECT 
-            e.[mentor_expertise_id],
-            e.[mentor_expertise],
-            e.[mentor_exp_cr_date],
-            e.[mentor_exp_update_date]
-        FROM 
-            [dbo].[mentor_expertise_dtls] e
-        WHERE 
-            e.[mentor_dtls_id] = m.[mentor_dtls_id]
-        FOR JSON PATH
-    ) AS expertise_list,
-    (
-        SELECT 
-            p.[mentor_passion_id],
-            p.[mentor_passion],
-            p.[mentor_passion_cr_date],
-            p.[mentor_passion_update_date],
-            p.[mentor_passion_boolean]
-        FROM 
-            [dbo].[mentor_passion_dtls] p
-        WHERE 
-            p.[mentor_dtls_id] = m.[mentor_dtls_id]
-        FOR JSON PATH
-    ) AS passion_list,
+    m.[mentor_passion_dtls],
+    m.[mentor_area_expertise],
+    m.[mentor_domain],
     (
         SELECT 
             t.[mentor_timeslot_id],
             t.[mentor_dtls_id],
-            t.[mentor_timeslot_day],
-            t.[mentor_timeslot_from],
-            t.[mentor_timeslot_to],
             t.[mentor_timeslot_rec_indicator],
-            t.[mentor_timeslot_rec_end_timeframe],
-            t.[mentor_timeslot_rec_cr_date],
-            t.[mentor_timeslot_booking_status]
+            t.[mentor_timeslot_rec_end_timeframe]
         FROM 
             [dbo].[mentor_timeslots_dtls] t
         WHERE 
             t.[mentor_dtls_id] = m.[mentor_dtls_id]
         FOR JSON PATH
-    ) AS timeslot_list
+    ) AS timeslot_list,
+    (
+        SELECT 
+        b.[mentor_dtls_id],
+        b.[mentor_session_booking_date],
+        b.[mentor_booking_confirmed],
+        b.[mentor_session_status],
+        b.[mentor_timeslot_dtls_id]
+        FROM 
+            [dbo].[mentor_booking_appointments_dtls] b
+        WHERE 
+            b.[mentor_dtls_id] = m.[mentor_dtls_id] and b.[mentor_booking_confirmed] = 'Yes' or b.[mentor_booking_confirmed] = 'No'
+        FOR JSON PATH
+    ) AS booking_dtls_list,
+      ISNULL(
+        (SELECT COUNT(*) 
+        FROM [dbo].[mentor_booking_appointments_dtls] b
+        WHERE b.[mentor_dtls_id] = m.[mentor_dtls_id] and b.[mentor_session_status] = 'completed' and b.[trainee_session_status] = 'completed'),
+        0
+    ) AS mentor_session_count,
+     ISNULL(
+        (SELECT COUNT(*) 
+        FROM [dbo].[mentor_feedback_dtls] f
+        WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]),
+        0
+    ) AS feedback_count,
+    (
+        SELECT AVG(CAST(f.[mentor_feedback_session_overall_rating] AS FLOAT))
+        FROM [dbo].[mentor_feedback_dtls] f
+        WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]
+    ) AS avg_mentor_rating
 FROM 
     [dbo].[users_dtls] u
 JOIN 
@@ -553,7 +543,8 @@ export const MentorBookingAppointmentQuery = `
                 [mentor_razorpay_signature],
                 [mentor_host_url],
                 [trainee_join_url],
-                [mentor_amount_paid_status]
+                [mentor_amount_paid_status],
+                [mentor_timeslot_dtls_id]
             ) 
             VALUES 
             (
@@ -572,7 +563,8 @@ export const MentorBookingAppointmentQuery = `
                 @mentorRazorpaySignature,
                 @mentorHostUrl,
                 @traineeJoinUrl,
-                @mentorAmountPaidStatus
+                @mentorAmountPaidStatus,
+                @mentorTimeslotId
             )
         `;
 

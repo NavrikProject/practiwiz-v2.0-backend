@@ -4,6 +4,7 @@ import {
   changeUserPassword,
   forgotPassword,
   login,
+  MentorFirstRegister,
   resetPassword,
 } from "../../Controllers/AuthControllers/AuthControllers.js";
 import {
@@ -13,6 +14,8 @@ import {
 
 //login
 router.post("/login", login);
+//login
+router.post("/mentor/register", MentorFirstRegister);
 // changing the password from dashboard
 router.post("/change/password", verifyUserToken, changeUserPassword);
 

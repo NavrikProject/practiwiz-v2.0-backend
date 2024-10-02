@@ -10,7 +10,7 @@ import fileUpload from "express-fileupload";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import { google } from "googleapis";
-import fs from "fs";
+import fs, { access } from "fs";
 import { fileURLToPath } from "url";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
@@ -172,7 +172,6 @@ app.get("/test/email", async (req, res) => {
   }
 });
 
-// linked in url added
 // Endpoint to exchange the authorization code for an access token
 app.post("/getLinkedInToken", async (req, res) => {
   const { code } = req.body;
@@ -185,9 +184,10 @@ app.post("/getLinkedInToken", async (req, res) => {
         params: {
           grant_type: "authorization_code",
           code: code,
-          redirect_uri: `${process.env.FRONT_END_LINK}/auth/linkedin/callback`, // Your LinkedIn app's redirect URI
-          client_id: "86ctoyy9d4ddsn", // Replace with your LinkedIn App's client_id
-          client_secret: "SLIWETcZTm08xciT", // Replace with your LinkedIn App's client_secret
+          redirect_uri: `${process.env.FRONT_END_LINK}/auth/linkedin/callback`, // Your LinkedIn
+          // Your LinkedIn app's redirect URI
+          client_id: `${process.env.LINKEDIN_CLIENT_ID}`, // Replace with your LinkedIn App's client_ids
+          client_secret: `${process.env.LINKEDIN_CLIENT_SECRET}`, // Replace with your LinkedIn App's client_secret
         },
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -198,7 +198,7 @@ app.post("/getLinkedInToken", async (req, res) => {
     // Send access token back to frontend
     res.json(tokenResponse.data);
   } catch (error) {
-    console.error("Error fetching access token:", error.message);
+    console.error("Error response:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to fetch access token" });
   }
 });
