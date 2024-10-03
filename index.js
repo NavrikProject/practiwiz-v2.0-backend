@@ -143,7 +143,9 @@ async function connectToDatabases() {
         console.log(err.message);
       }
       if (db) {
-        console.log("Connected to database successfully");
+        console.log(
+          `Connected to database successfully to ${db.config.database}`
+        );
       }
     });
   } catch (error) {

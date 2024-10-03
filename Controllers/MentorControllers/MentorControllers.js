@@ -11,6 +11,7 @@ import moment from "moment";
 import {
   fetch10MentorQuery,
   fetchAllMentorQuery,
+  fetchMentorExpertQuery,
   fetchSingleMentorProfileForPublicQuery,
   fetchSingleMentorQuery,
   fetchSingleMentorQueryWithBookings,
@@ -409,6 +410,43 @@ export async function fetch10MentorInHome(req, res, next) {
   }
 }
 
+export async function fetchExpertMentorsInPublic(req, res, next) {
+  const { expert, expertId } = req.body;
+  console.log(req.body);
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: err.message,
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.input("SearchID", sql.Int, expertId);
+        request.query(fetchMentorExpertQuery, (err, result) => {
+          if (err) {
+            return res.json({
+              error: err.message,
+            });
+          }
+          if (result.recordset.length > 0) {
+            return res.json({
+              success: result.recordset,
+            });
+          } else {
+            return res.json({
+              error: "No mentor has been approved",
+            });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
 //
 export async function test(req, res) {
   try {
