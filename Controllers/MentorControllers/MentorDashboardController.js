@@ -5,6 +5,7 @@ import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
 import {
   CheckBankDetailsExistsQuery,
+  fetchMentorNotUpdatedDetailsQuery,
   fetchMentorSingleDashboardQuery,
   InsertBankDetailsQuery,
   MarkMentorAllMessagesAsReadQuery,
@@ -28,23 +29,52 @@ export async function fetchSingleDashboardMentorDetails(req, res) {
       }
       if (db) {
         const request = new sql.Request();
-        request.input("desired_mentor_dtls_id", sql.Int, userId);
-        request.query(fetchMentorSingleDashboardQuery, (err, result) => {
-          if (err) {
-            return res.json({
-              error: err.message,
-            });
+        request.input("mentor_dtls_id", sql.Int, userId);
+        request.query(
+          `select * from mentor_dtls where mentor_user_dtls_id = @mentor_dtls_id`,
+          (err, results) => {
+            if (results.recordset.length > 0) {
+              request.input("desired_mentor_dtls_id", sql.Int, userId);
+              request.query(fetchMentorSingleDashboardQuery, (err, result) => {
+                if (err) {
+                  return res.json({
+                    error: err.message,
+                  });
+                }
+                if (result.recordset.length > 0) {
+                  return res.json({
+                    success: result.recordset,
+                  });
+                } else {
+                  return res.json({
+                    error: "mentor is not approved yet",
+                  });
+                }
+              });
+            } else {
+              request.input("desired_mentor_dtls_id1", sql.Int, userId);
+              request.query(
+                fetchMentorNotUpdatedDetailsQuery,
+                (err, result) => {
+                  if (err) {
+                    return res.json({
+                      error: err.message,
+                    });
+                  }
+                  if (result.recordset.length > 0) {
+                    return res.json({
+                      success: result.recordset,
+                    });
+                  } else {
+                    return res.json({
+                      error: "mentor is not approved yet",
+                    });
+                  }
+                }
+              );
+            }
           }
-          if (result.recordset.length > 0) {
-            return res.json({
-              success: result.recordset,
-            });
-          } else {
-            return res.json({
-              error: "mentor is not approved yet",
-            });
-          }
-        });
+        );
       }
     });
   } catch (error) {
