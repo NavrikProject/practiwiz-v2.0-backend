@@ -15,9 +15,12 @@ import {
   sendEmail,
   uploadMentorPhotoToAzure,
 } from "../../Middleware/AllFunctions.js";
-import { mentorProfilePictureDashboardUpdateQuery } from "../../SQLQueries/MentorDashboard/MentorDashboardUpdateSqlQueries.js";
+import {
+  mentorProfilePicDashboardUpdateQuery,
+  mentorProfilePictureDashboardUpdateQuery,
+} from "../../SQLQueries/MentorDashboard/MentorDashboardUpdateSqlQueries.js";
 dotenv.config();
-
+// updation done
 export async function MentorUpdateMentorProfile1(req, res) {
   const {
     social_media_profile,
@@ -25,8 +28,23 @@ export async function MentorUpdateMentorProfile1(req, res) {
     mentor_city,
     mentor_institute,
     mentor_academic_qualification,
+    Mentor_Domain,
+    jobtitle,
+    experience,
+    companyName,
+    passionateAbout,
+    AreaOfexpertise,
+    areaofmentorship,
+    headline,
+    mentor_sessions_free_of_charge,
+    mentor_guest_lectures_interest,
+    mentor_curating_case_studies_interest,
+    mentor_timezone,
+    mentor_language,
+    mentor_currency_type,
+    mentor_session_price,
   } = req.body.formData;
-  const { userDtlsId } = req.body;
+  const { mentorUserDtlsId, mentor_email, mentorPhoneNumber } = req.body;
   try {
     sql.connect(config, (err) => {
       if (err)
@@ -34,13 +52,13 @@ export async function MentorUpdateMentorProfile1(req, res) {
           error: "There is some error while updating the Mentor profile",
         });
       const request = new sql.Request();
-      request.input("userDtlsId", sql.Int, userDtlsId);
+      request.input("mentorUserDtlsId", sql.Int, mentorUserDtlsId);
       request.query(
-        "select user_dtls_id from users_dtls where user_dtls_id = @userDtlsId",
+        "select mentor_user_dtls_id from mentor_dtls where mentor_user_dtls_id = @mentorUserDtlsId",
         (err, result) => {
           if (err) return res.json({ error: err.message });
           if (result.recordset.length > 0) {
-            request.input("mentorUserDtlsId", sql.Int, userDtlsId);
+            request.input("mentorUserDtlsId", sql.Int, mentorUserDtlsId);
             request.input("mentorCity", sql.VarChar, mentor_city);
             request.input("mentorCountry", sql.VarChar, mentor_country);
             request.input(
@@ -71,6 +89,104 @@ export async function MentorUpdateMentorProfile1(req, res) {
                 }
               }
             );
+          } else {
+            request.input("mentor_user_dtls_id", sql.Int, mentorUserDtlsId);
+            request.input(
+              "mentor_phone_number",
+              sql.VarChar,
+              mentorPhoneNumber
+            );
+            request.input("mentor_email", sql.VarChar, mentor_email);
+            request.input(
+              "mentor_profile_photo",
+              sql.VarChar,
+              "https://practiwizstorage.blob.core.windows.net/practiwizcontainer/blue-circle-with-white-user_78370-4707.webp"
+            );
+            request.input(
+              "mentor_social_media_profile",
+              sql.VarChar,
+              social_media_profile || ""
+            );
+            request.input("mentor_job_title", sql.VarChar, jobtitle || "");
+            request.input(
+              "mentor_company_name",
+              sql.VarChar,
+              companyName || ""
+            );
+            request.input(
+              "mentor_years_of_experience",
+              sql.Int,
+              experience || ""
+            );
+            request.input(
+              "mentor_academic_qualification",
+              sql.VarChar,
+              mentor_academic_qualification || ""
+            );
+            request.input(
+              "mentor_recommended_area_of_mentorship",
+              sql.VarChar,
+              areaofmentorship || ""
+            );
+            request.input(
+              "mentor_guest_lectures_interest",
+              sql.VarChar,
+              mentor_guest_lectures_interest || ""
+            );
+            request.input(
+              "mentor_curating_case_studies_interest",
+              sql.VarChar,
+              mentor_curating_case_studies_interest || ""
+            );
+            request.input(
+              "mentor_sessions_free_of_charge",
+              sql.VarChar,
+              mentor_sessions_free_of_charge || ""
+            );
+            request.input(
+              "mentor_language",
+              sql.VarChar,
+              mentor_language || ""
+            );
+            request.input(
+              "mentor_timezone",
+              sql.VarChar,
+              mentor_timezone || ""
+            );
+            request.input("mentor_country", sql.VarChar, mentor_country || "");
+            request.input("mentor_headline", sql.VarChar, headline || "");
+            request.input(
+              "mentor_session_price",
+              sql.VarChar,
+              mentor_session_price || ""
+            );
+            request.input(
+              "mentor_currency",
+              sql.VarChar,
+              mentor_currency_type || ""
+            );
+            request.input("City", sql.VarChar, mentor_city || "");
+            request.input("Institute", sql.VarChar, mentor_institute || "");
+            request.input("areaOfExpertise", sql.Text, AreaOfexpertise || "[]");
+            request.input("passionAbout", sql.Text, passionateAbout || "[]");
+            request.input("mentorDomain", sql.VarChar, Mentor_Domain || "");
+            request.query(
+              mentorProfilePicDashboardUpdateQuery,
+              async (err, result) => {
+                if (err) return res.json({ error: err.message });
+                if (result) {
+                  const notification = await InsertNotificationHandler(
+                    mentorUserDtlsId,
+                    SuccessMsg,
+                    MentorProfileHeading,
+                    MentorProfileChangedMessage
+                  );
+                  return res.json({
+                    success: "Successfully updated the profile",
+                  });
+                }
+              }
+            );
           }
         }
       );
@@ -81,19 +197,31 @@ export async function MentorUpdateMentorProfile1(req, res) {
     });
   }
 }
+//wip
 export async function MentorUpdateMentorProfile2(req, res) {
-  const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
   const {
-    mentor_company_name,
+    social_media_profile,
+    mentor_country,
+    mentor_city,
+    mentor_institute,
+    mentor_academic_qualification,
     mentor_domain,
-    mentor_headline,
-    mentor_job_title,
-    mentor_passion_dtls,
     mentor_recommended_area_of_mentorship,
     mentor_years_of_experience,
+    mentor_company_name,
+    mentor_headline,
+    mentor_job_title,
+    mentor_sessions_free_of_charge,
+    mentor_guest_lectures_interest,
+    mentor_curating_case_studies_interest,
+    mentor_timezone,
+    mentor_language,
+    mentor_currency_type,
+    mentor_session_price,
+    mentor_passion_dtls,
   } = req.body.formData;
-  const { userDtlsId, expertiseList } = req.body;
-
+  const { mentorUserDtlsId, mentor_email, mentorPhoneNumber, expertiseList } =
+    req.body;
   try {
     sql.connect(config, (err) => {
       if (err)
@@ -101,14 +229,12 @@ export async function MentorUpdateMentorProfile2(req, res) {
           error: "There is some error while updating the Mentor profile",
         });
       const request = new sql.Request();
-      request.input("userDtlsId", sql.Int, userDtlsId);
+      request.input("mentorUserDtlsId", sql.Int, mentorUserDtlsId);
       request.query(
-        "select mentor_dtls_id from mentor_dtls where mentor_user_dtls_id = @userDtlsId",
-        async (err, result) => {
+        "select mentor_user_dtls_id from mentor_dtls where mentor_user_dtls_id = @mentorUserDtlsId",
+        (err, result) => {
           if (err) return res.json({ error: err.message });
           if (result.recordset.length > 0) {
-            const mentorDtlsId = result.recordset[0].mentor_dtls_id;
-            request.input("mentorUserDtlsId", sql.Int, userDtlsId);
             request.input("companyName", sql.VarChar, mentor_company_name);
             request.input("mentorDomain", sql.VarChar, mentor_domain);
             request.input("headline", sql.VarChar, mentor_headline);
@@ -131,7 +257,7 @@ export async function MentorUpdateMentorProfile2(req, res) {
                 if (err) return res.json({ error: err.message });
                 if (result) {
                   const notificationHandler = await InsertNotificationHandler(
-                    userDtlsId,
+                    mentorUserDtlsId,
                     InfoMsg,
                     MentorProfileHeading,
                     MentorProfileChangedMessage
@@ -140,6 +266,116 @@ export async function MentorUpdateMentorProfile2(req, res) {
                     success: "Successfully updated the time slots",
                   });
                   s;
+                }
+              }
+            );
+          } else {
+            request.input("mentor_user_dtls_id", sql.Int, mentorUserDtlsId);
+            request.input(
+              "mentor_phone_number",
+              sql.VarChar,
+              mentorPhoneNumber
+            );
+            request.input("mentor_email", sql.VarChar, mentor_email);
+            request.input(
+              "mentor_profile_photo",
+              sql.VarChar,
+              "https://practiwizstorage.blob.core.windows.net/practiwizcontainer/blue-circle-with-white-user_78370-4707.webp"
+            );
+            request.input(
+              "mentor_social_media_profile",
+              sql.VarChar,
+              social_media_profile || ""
+            );
+            request.input(
+              "mentor_job_title",
+              sql.VarChar,
+              mentor_job_title || ""
+            );
+            request.input(
+              "mentor_company_name",
+              sql.VarChar,
+              mentor_company_name || ""
+            );
+            request.input(
+              "mentor_years_of_experience",
+              sql.Int,
+              mentor_years_of_experience || ""
+            );
+            request.input(
+              "mentor_academic_qualification",
+              sql.VarChar,
+              mentor_academic_qualification || ""
+            );
+            request.input(
+              "mentor_recommended_area_of_mentorship",
+              sql.VarChar,
+              mentor_recommended_area_of_mentorship || ""
+            );
+            request.input(
+              "mentor_guest_lectures_interest",
+              sql.VarChar,
+              mentor_guest_lectures_interest || ""
+            );
+            request.input(
+              "mentor_curating_case_studies_interest",
+              sql.VarChar,
+              mentor_curating_case_studies_interest || ""
+            );
+            request.input(
+              "mentor_sessions_free_of_charge",
+              sql.VarChar,
+              mentor_sessions_free_of_charge || ""
+            );
+            request.input(
+              "mentor_language",
+              sql.VarChar,
+              mentor_language || ""
+            );
+            request.input(
+              "mentor_timezone",
+              sql.VarChar,
+              mentor_timezone || ""
+            );
+            request.input("mentor_country", sql.VarChar, mentor_country || "");
+            request.input(
+              "mentor_headline",
+              sql.VarChar,
+              mentor_headline || ""
+            );
+            request.input(
+              "mentor_session_price",
+              sql.VarChar,
+              mentor_session_price || ""
+            );
+            request.input(
+              "mentor_currency",
+              sql.VarChar,
+              mentor_currency_type || ""
+            );
+            request.input("City", sql.VarChar, mentor_city || "");
+            request.input("Institute", sql.VarChar, mentor_institute || "");
+            request.input("areaOfExpertise", sql.Text, expertiseList || "[]");
+            request.input(
+              "passionAbout",
+              sql.Text,
+              mentor_passion_dtls || "[]"
+            );
+            request.input("mentorDomain", sql.VarChar, mentor_domain || "");
+            request.query(
+              mentorProfilePicDashboardUpdateQuery,
+              async (err, result) => {
+                if (err) return res.json({ error: err.message });
+                if (result) {
+                  const notification = await InsertNotificationHandler(
+                    mentorUserDtlsId,
+                    SuccessMsg,
+                    MentorProfileHeading,
+                    MentorProfileChangedMessage
+                  );
+                  return res.json({
+                    success: "Successfully updated the profile",
+                  });
                 }
               }
             );
@@ -153,6 +389,8 @@ export async function MentorUpdateMentorProfile2(req, res) {
     });
   }
 }
+
+// updates are done
 export async function MentorUpdateMentorProfile3(req, res) {
   const { Mon, Tue, Wed, Thu, Fri, Sat, Sun } = req.body;
   const { userDtlsId } = req.body;
@@ -242,6 +480,11 @@ export async function MentorUpdateMentorProfile3(req, res) {
               MentorProfileChangedMessage
             );
             return res.json({ success: "Successfully updated the time slots" });
+          } else {
+            return res.json({
+              error:
+                "Please update personal details before updating the time slots",
+            });
           }
         }
       );
@@ -331,12 +574,180 @@ function UpdateMentorTimeSlots(array, mentorDtlsId, day, timestamp) {
 }
 export async function MentorUpdateMentorProfile4(req, res) {
   const {
-    mentor_curating_case_studies_interest,
-    mentor_guest_lectures_interest,
-    mentor_language,
+    Mentor_Domain,
+    sociallink,
+    jobtitle,
+    experience,
+    companyName,
+    passionateAbout,
+    AreaOfexpertise,
+    academicQualification,
+    areaofmentorship,
+    headline,
+    Country,
+    City,
+    Institute,
     mentor_sessions_free_of_charge,
+    mentor_guest_lectures_interest,
+    mentor_curating_case_studies_interest,
     mentor_timezone,
+    mentor_language,
+    mentor_currency_type,
+    mentor_session_price,
   } = req.body.formData;
+  const { mentorUserDtlsId, mentor_email, mentorPhoneNumber } = req.body;
+  try {
+    sql.connect(config, (err, db) => {
+      if (err)
+        return res.json({
+          error: "There is some error while updating the profile details",
+        });
+      const request = new sql.Request();
+      request.input("mentorUserDtlsId", sql.Int, mentorUserDtlsId);
+      request.query(
+        "select mentor_user_dtls_id from mentor_dtls where mentor_user_dtls_id = @mentorUserDtlsId",
+        async (err, result) => {
+          if (result.recordset.length > 0) {
+            request.input(
+              "caseStudies",
+              sql.VarChar,
+              mentor_curating_case_studies_interest
+            );
+            request.input(
+              "guestLecture",
+              sql.VarChar,
+              mentor_guest_lectures_interest
+            );
+            request.input("language", sql.VarChar, mentor_language);
+            request.input(
+              "freeOfCharge",
+              sql.VarChar,
+              mentor_sessions_free_of_charge
+            );
+            request.input("timezone", sql.VarChar, mentor_timezone);
+            request.query(
+              "update mentor_dtls set mentor_curating_case_studies_interest = @caseStudies , mentor_guest_lectures_interest = @guestLecture, mentor_language = @language,mentor_sessions_free_of_charge = @freeOfCharge,mentor_timezone = @timezone where mentor_user_dtls_id = @mentorUserDtlsId",
+              async (err, result) => {
+                if (err) return res.json({ error: err.message });
+                if (result) {
+                  const notificationHandler = await InsertNotificationHandler(
+                    userDtlsId,
+                    InfoMsg,
+                    MentorProfileHeading,
+                    MentorProfileChangedMessage
+                  );
+                  return res.json({
+                    success: "Successfully updated the profile details",
+                  });
+                }
+              }
+            );
+          } else {
+            request.input("mentor_user_dtls_id", sql.Int, mentorUserDtlsId);
+            request.input(
+              "mentor_phone_number",
+              sql.VarChar,
+              mentorPhoneNumber
+            );
+            request.input("mentor_email", sql.VarChar, mentor_email);
+            request.input(
+              "mentor_profile_photo",
+              sql.VarChar,
+              "https://practiwizstorage.blob.core.windows.net/practiwizcontainer/blue-circle-with-white-user_78370-4707.webp"
+            );
+            request.input(
+              "mentor_social_media_profile",
+              sql.VarChar,
+              sociallink || ""
+            );
+            request.input("mentor_job_title", sql.VarChar, jobtitle || "");
+            request.input(
+              "mentor_company_name",
+              sql.VarChar,
+              companyName || ""
+            );
+            request.input(
+              "mentor_years_of_experience",
+              sql.Int,
+              experience || ""
+            );
+            request.input(
+              "mentor_academic_qualification",
+              sql.VarChar,
+              academicQualification || ""
+            );
+            request.input(
+              "mentor_recommended_area_of_mentorship",
+              sql.VarChar,
+              areaofmentorship || ""
+            );
+            request.input(
+              "mentor_guest_lectures_interest",
+              sql.VarChar,
+              mentor_guest_lectures_interest || ""
+            );
+            request.input(
+              "mentor_curating_case_studies_interest",
+              sql.VarChar,
+              mentor_curating_case_studies_interest || ""
+            );
+            request.input(
+              "mentor_sessions_free_of_charge",
+              sql.VarChar,
+              mentor_sessions_free_of_charge || ""
+            );
+            request.input(
+              "mentor_language",
+              sql.VarChar,
+              mentor_language || ""
+            );
+            request.input(
+              "mentor_timezone",
+              sql.VarChar,
+              mentor_timezone || ""
+            );
+            request.input("mentor_country", sql.VarChar, Country || "");
+            request.input("mentor_headline", sql.VarChar, headline || "");
+            request.input(
+              "mentor_session_price",
+              sql.VarChar,
+              mentor_session_price || ""
+            );
+            request.input(
+              "mentor_currency",
+              sql.VarChar,
+              mentor_currency_type || ""
+            );
+            request.input("City", sql.VarChar, City || "");
+            request.input("Institute", sql.VarChar, Institute || "");
+            request.input("areaOfExpertise", sql.Text, AreaOfexpertise || "[]");
+            request.input("passionAbout", sql.Text, passionateAbout || "[]");
+            request.input("mentorDomain", sql.VarChar, Mentor_Domain || "");
+            request.query(
+              mentorProfilePicDashboardUpdateQuery,
+              async (err, result) => {
+                if (err) return res.json({ error: err.message });
+                if (result) {
+                  const notification = await InsertNotificationHandler(
+                    mentorUserDtlsId,
+                    SuccessMsg,
+                    MentorProfileHeading,
+                    MentorProfileChangedMessage
+                  );
+                  return res.json({
+                    success: "Successfully updated the profile",
+                  });
+                }
+              }
+            );
+          }
+        }
+      );
+    });
+  } catch (error) {
+    return res.json({ error: error.message });
+  }
+
   const { userDtlsId } = req.body;
   try {
     sql.connect(config, (err) => {
@@ -397,14 +808,38 @@ export async function MentorUpdateMentorProfile4(req, res) {
   }
 }
 export async function UpdateMentorProfilePicture(req, res) {
-  const { mentorUserDtlsId, mentorEmail, mentorPhoneNumber } = req.body;
+  const {
+    mentorUserDtlsId,
+    mentorEmail,
+    mentorPhoneNumber,
+    Mentor_Domain,
+    sociallink,
+    jobtitle,
+    experience,
+    companyName,
+    passionateAbout,
+    AreaOfexpertise,
+    academicQualification,
+    areaofmentorship,
+    headline,
+    lecturesInterest,
+    caseInterest,
+    freeCharge,
+    Timezone,
+    Language,
+    Country,
+    Pricing,
+    City,
+    Currency,
+    Institute,
+  } = req.body;
   try {
     if (!req.files.image) {
       return res.json({ error: "Please select a file to upload" });
     }
     const blobName = new Date().getTime() + "-" + req.files.image.name;
     var fileName = `https://practiwizstorage.blob.core.windows.net/practiwizcontainer/mentorprofilepictures/${blobName}`;
-    // uploadMentorPhotoToAzure(req.files, blobName);
+    uploadMentorPhotoToAzure(req.files, blobName);
     sql.connect(config, (err, db) => {
       if (err)
         return res.json({
@@ -414,7 +849,7 @@ export async function UpdateMentorProfilePicture(req, res) {
       request.input("mentorUserDtlsId", sql.Int, mentorUserDtlsId);
       request.query(
         "select mentor_user_dtls_id from mentor_dtls where mentor_user_dtls_id = @mentorUserDtlsId",
-        (err, result) => {
+        async (err, result) => {
           if (result.recordset.length > 0) {
             request.input("mentorProfileUrl", sql.VarChar, fileName);
             request.query(
@@ -435,17 +870,68 @@ export async function UpdateMentorProfilePicture(req, res) {
               }
             );
           } else {
-            request.input("mentorUserDtlsId1", sql.Int, mentorUserDtlsId);
-            request.input("mentorEmail", sql.VarChar, mentorEmail);
-            request.input("mentorPhoneNumber", sql.VarChar, mentorPhoneNumber);
-            request.input("mentorProfilePhoto", sql.VarChar, fileName);
-            request.input("mentor_job_title", sql.VarChar, "");
-            request.input("mentor_company_name", sql.VarChar, "");
-            request.input("mentor_years_of_experience", sql.Int, "");
-            request.input("mentor_academic_qualification", sql.VarChar, "");
-            request.input("mentor_currency", sql.VarChar, "");
+            request.input("mentor_user_dtls_id", sql.Int, mentorUserDtlsId);
+            request.input(
+              "mentor_phone_number",
+              sql.VarChar,
+              mentorPhoneNumber
+            );
+            request.input("mentor_email", sql.VarChar, mentorEmail);
+            request.input("mentor_profile_photo", sql.VarChar, fileName);
+            request.input(
+              "mentor_social_media_profile",
+              sql.VarChar,
+              sociallink || ""
+            );
+            request.input("mentor_job_title", sql.VarChar, jobtitle || "");
+            request.input(
+              "mentor_company_name",
+              sql.VarChar,
+              companyName || ""
+            );
+            request.input(
+              "mentor_years_of_experience",
+              sql.Int,
+              experience || ""
+            );
+            request.input(
+              "mentor_academic_qualification",
+              sql.VarChar,
+              academicQualification || ""
+            );
+            request.input(
+              "mentor_recommended_area_of_mentorship",
+              sql.VarChar,
+              areaofmentorship || ""
+            );
+            request.input(
+              "mentor_guest_lectures_interest",
+              sql.VarChar,
+              lecturesInterest || ""
+            );
+            request.input(
+              "mentor_curating_case_studies_interest",
+              sql.VarChar,
+              caseInterest || ""
+            );
+            request.input(
+              "mentor_sessions_free_of_charge",
+              sql.VarChar,
+              freeCharge || ""
+            );
+            request.input("mentor_language", sql.VarChar, Language || "");
+            request.input("mentor_timezone", sql.VarChar, Timezone || "");
+            request.input("mentor_country", sql.VarChar, Country || "");
+            request.input("mentor_headline", sql.VarChar, headline || "");
+            request.input("mentor_session_price", sql.VarChar, Pricing || "");
+            request.input("mentor_currency", sql.VarChar, Currency || "");
+            request.input("City", sql.VarChar, City || "");
+            request.input("Institute", sql.VarChar, Institute || "");
+            request.input("areaOfExpertise", sql.Text, AreaOfexpertise || "[]");
+            request.input("passionAbout", sql.Text, passionateAbout || "[]");
+            request.input("mentorDomain", sql.VarChar, Mentor_Domain || "");
             request.query(
-              mentorProfilePictureDashboardUpdateQuery,
+              mentorProfilePicDashboardUpdateQuery,
               async (err, result) => {
                 if (err) return res.json({ error: err.message });
                 if (result) {
