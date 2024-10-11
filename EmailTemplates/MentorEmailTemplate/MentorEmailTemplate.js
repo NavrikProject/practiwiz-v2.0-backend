@@ -40,15 +40,6 @@ export const mentorApplicationEmail = (mentorEmail, mentorName) => {
       </h2>
       <hr style="width: 80px; border: 1px solid #1abc9c; margin: 20px auto;" />
     </div>
-
-    <div style="text-align: center; margin-bottom: 30px;">
-      <img
-        src="https://via.placeholder.com/600x200?text=Mentor+Application+Received"
-        alt="Mentor Application Received"
-        style="max-width: 100%; border-radius: 10px;"
-      />
-    </div>
-
     <p style="font-size: 16px; line-height: 1.8; color: #555;">
       Hi <b>${mentorName}</b>,
     </p>
@@ -152,14 +143,6 @@ export const mentorApprovedEmailTemplateOld = (mentorEmail, username) => {
         Welcome to Practiwiz
       </h2>
       <hr style="width: 80px; border: 1px solid #1abc9c; margin: 20px auto;" />
-    </div>
-
-    <div style="text-align: center; margin-bottom: 30px;">
-      <img
-        src="https://via.placeholder.com/600x200?text=Mentor+Application+Received"
-        alt="Mentor Application Received"
-        style="max-width: 100%; border-radius: 10px;"
-      />
     </div>
     <!-- Greeting and Introduction -->
     <p style="font-size: 16px; color: #333333; line-height: 1.6;">
