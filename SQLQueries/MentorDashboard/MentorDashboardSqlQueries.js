@@ -175,6 +175,39 @@ SELECT
     m.[mentor_domain],
     'Yes' AS mentor_dtls_found,
     (
+        CASE 
+            WHEN m.mentor_dtls_id IS NOT NULL 
+                 AND m.mentor_job_title <> ''
+                 AND m.mentor_company_name <> ''
+                 AND m.mentor_years_of_experience <> ''
+                 AND CAST(m.mentor_headline AS varchar(max)) <> ''
+                 AND m.mentor_area_expertise IS NOT NULL THEN
+                CASE 
+                    WHEN EXISTS (SELECT 1 FROM TimeslotDetails t WHERE t.mentor_dtls_id = m.mentor_dtls_id) 
+                        THEN 
+                            CASE 
+                                WHEN 
+                                    m.mentor_profile_photo IS NOT NULL
+                                    AND m.mentor_academic_qualification IS NOT NULL
+                                    AND m.mentor_recommended_area_of_mentorship IS NOT NULL
+                                    AND m.mentor_guest_lectures_interest IS NOT NULL
+                                    AND m.mentor_curating_case_studies_interest IS NOT NULL
+                                    AND m.mentor_sessions_free_of_charge IS NOT NULL
+                                    AND m.mentor_language IS NOT NULL
+                                    AND m.mentor_timezone IS NOT NULL
+                                    AND m.mentor_country IS NOT NULL
+                                    AND m.mentor_city IS NOT NULL
+                                    AND m.mentor_institute IS NOT NULL
+                                    AND m.mentor_passion_dtls IS NOT NULL
+                                    AND m.mentor_domain IS NOT NULL THEN 100
+                                ELSE 80
+                            END
+                    ELSE 50
+                END
+            ELSE 20
+        END
+    ) AS total_progress,
+    (
         SELECT 
             * 
         FROM TimeslotDetails t
@@ -225,7 +258,7 @@ JOIN
 LEFT JOIN 
     FeedbackData fb ON fb.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]
 WHERE 
-    u.[user_dtls_id] = @desired_mentor_dtls_id
+    u.[user_dtls_id] = @desired_mentor_dtls_id;
 `;
 
 export const fetchMentorNotUpdatedDetailsQuery = `

@@ -15,6 +15,5 @@ export const MentorUserFIrstRegDtlsQuery = `
             @user_phone_number,
             @user_status,
             @user_type
-
         );
 `;

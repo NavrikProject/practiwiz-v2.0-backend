@@ -58,7 +58,6 @@ export async function MentorUpdateMentorProfile1(req, res) {
         (err, result) => {
           if (err) return res.json({ error: err.message });
           if (result.recordset.length > 0) {
-            request.input("mentorUserDtlsId", sql.Int, mentorUserDtlsId);
             request.input("mentorCity", sql.VarChar, mentor_city);
             request.input("mentorCountry", sql.VarChar, mentor_country);
             request.input(
@@ -78,7 +77,7 @@ export async function MentorUpdateMentorProfile1(req, res) {
                 if (err) return res.json({ error: err.message });
                 if (result) {
                   const notificationHandler = await InsertNotificationHandler(
-                    userDtlsId,
+                    mentorUserDtlsId,
                     InfoMsg,
                     MentorProfileHeading,
                     MentorProfileChangedMessage
@@ -711,12 +710,12 @@ export async function MentorUpdateMentorProfile4(req, res) {
             request.input(
               "mentor_session_price",
               sql.VarChar,
-              mentor_session_price || ""
+              mentor_session_price || "1000"
             );
             request.input(
               "mentor_currency",
               sql.VarChar,
-              mentor_currency_type || ""
+              mentor_currency_type || "INR"
             );
             request.input("City", sql.VarChar, City || "");
             request.input("Institute", sql.VarChar, Institute || "");

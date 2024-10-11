@@ -7,9 +7,17 @@ import {
   MentorRegistration,
   test,
 } from "../../Controllers/MentorControllers/MentorControllers.js";
+import {
+  MentorOnboardingFeedbackController,
+  MentorUpdateAdditionalDetails,
+  MentorUpdatedRegistration,
+} from "../../Controllers/MentorControllers/MentorUpdatedRegistration.js";
 
 const router = express.Router();
 router.post("/register", MentorRegistration);
+router.post("/updated/registration", MentorUpdatedRegistration);
+router.post("/update/additional-details", MentorUpdateAdditionalDetails);
+router.post("/update/onboarding-feedback", MentorOnboardingFeedbackController);
 
 router.get("/fetch-details", fetchAllMentorDetails);
 // for nav bar
