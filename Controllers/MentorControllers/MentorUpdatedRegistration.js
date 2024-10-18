@@ -396,7 +396,7 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
           const ToHour = item.to.hours;
           const ToMinute = item.to.minutes;
           const ToMeridian = item.to.ampm;
-          let mentorRecType = item.recurring.mentor_timeslot_rec_indicator;
+          let mentorRecType = item.recurring.Mentor_timeslot_rec_indicator;
           const mentorRecEndDate = item.date.Mentor_timeslot_rec_end_date;
           const FromTime = FromHour + ":" + FromMinute + FromMeridian;
           const ToTime = ToHour + ":" + ToMinute + ToMeridian;
