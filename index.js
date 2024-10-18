@@ -9,6 +9,7 @@ import path from "path";
 import fileUpload from "express-fileupload";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
+import bcrypt from "bcrypt";
 import { google } from "googleapis";
 import fs, { access } from "fs";
 import { fileURLToPath } from "url";
@@ -135,7 +136,6 @@ app.use("/api/v1/institute", instituteRoute);
 // admin dashboard
 app.use("/api/v1/admin/dashboard", adminDashboardRoute);
 app.use("/api/v1/admin/dashboard/case-studies", adminCaseStudiesDashboardRoute);
-
 async function connectToDatabases() {
   try {
     sql.connect(config, (err, db) => {
@@ -173,7 +173,30 @@ app.get("/test/email", async (req, res) => {
     });
   }
 });
+// app.get("/database", function (req, res) {
+//   try {
+//     sql.connect(config, (err, db) => {
+//       if (err) {
+//         console.log(err.message);
+//       }
+//       if (db) {
+//         console.log(
+//           `Connected to database successfully to ${db.config.database}`
+//         );
+//         const request = new sql.Request();
+//         request.query(
+//           'update mentor_dtls set mentor_domain = \'[ { \"value\": \"technology\", \"label\": \"Technology\" } ]\' where mentor_dtls_id = 19',
+//           (err, res) => {
+//             console.log(res);
 
+//           }
+//         );
+//       }
+//     });
+//   } catch (error) {
+//     console.log(error.message);
+//   }
+// });
 // Endpoint to exchange the authorization code for an access token
 app.post("/getLinkedInToken", async (req, res) => {
   const { code } = req.body;

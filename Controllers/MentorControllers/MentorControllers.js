@@ -12,6 +12,7 @@ import {
   fetch10MentorQuery,
   fetchAllMentorQuery,
   fetchMentorExpertQuery,
+  fetchNavbarMentorExpertQuery,
   fetchSingleMentorProfileForPublicQuery,
   fetchSingleMentorQuery,
   fetchSingleMentorQueryWithBookings,
@@ -411,7 +412,7 @@ export async function fetch10MentorInHome(req, res, next) {
 }
 
 export async function fetchExpertMentorsInPublic(req, res, next) {
-  const { expert, expertId } = req.body;
+  const { expert } = req.body;
   console.log(req.body);
   try {
     sql.connect(config, (err, db) => {
@@ -422,8 +423,8 @@ export async function fetchExpertMentorsInPublic(req, res, next) {
       }
       if (db) {
         const request = new sql.Request();
-        request.input("SearchID", sql.Int, expertId);
-        request.query(fetchMentorExpertQuery, (err, result) => {
+        request.input("SearchCategory", sql.NVarChar, expert);
+        request.query(fetchNavbarMentorExpertQuery, (err, result) => {
           if (err) {
             return res.json({
               error: err.message,

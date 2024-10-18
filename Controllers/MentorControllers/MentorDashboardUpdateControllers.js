@@ -204,7 +204,6 @@ export async function MentorUpdateMentorProfile2(req, res) {
     mentor_city,
     mentor_institute,
     mentor_academic_qualification,
-    mentor_domain,
     mentor_recommended_area_of_mentorship,
     mentor_years_of_experience,
     mentor_company_name,
@@ -219,8 +218,13 @@ export async function MentorUpdateMentorProfile2(req, res) {
     mentor_session_price,
     mentor_passion_dtls,
   } = req.body.formData;
-  const { mentorUserDtlsId, mentor_email, mentorPhoneNumber, expertiseList } =
-    req.body;
+  const {
+    mentorUserDtlsId,
+    mentor_email,
+    mentorPhoneNumber,
+    expertiseList,
+    mentor_domain,
+  } = req.body;
   try {
     sql.connect(config, (err) => {
       if (err)
@@ -235,7 +239,7 @@ export async function MentorUpdateMentorProfile2(req, res) {
           if (err) return res.json({ error: err.message });
           if (result.recordset.length > 0) {
             request.input("companyName", sql.VarChar, mentor_company_name);
-            request.input("mentorDomain", sql.VarChar, mentor_domain);
+            request.input("mentorDomain", sql.Text, mentor_domain);
             request.input("headline", sql.VarChar, mentor_headline);
             request.input("jobTitle", sql.VarChar, mentor_job_title);
             request.input("mentorPassion", sql.Text, mentor_passion_dtls);

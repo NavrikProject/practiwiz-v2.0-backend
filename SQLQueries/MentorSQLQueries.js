@@ -254,7 +254,8 @@ JOIN
 ON 
     u.[user_dtls_id] = m.[mentor_user_dtls_id]
 WHERE
-    m.[mentor_approved_status] = 'Yes';
+    m.[mentor_approved_status] = 'Yes'
+ORDER BY m.[mentor_dtls_id]  DESC;
 
 `;
 
@@ -342,6 +343,86 @@ WHERE
     m.[mentor_approved_status] = 'Yes'
     AND jsonData.id = @SearchID;  -- Only return rows where JSON id matches the given ID
 `;
+
+export const fetchNavbarMentorExpertQuery = `SELECT DISTINCT
+    u.[user_dtls_id],
+    u.[user_email],
+    u.[user_firstname],
+    u.[user_lastname],
+    m.[mentor_dtls_id],
+    m.[mentor_phone_number],
+    CAST(m.[mentor_profile_photo] AS NVARCHAR(MAX)) AS mentor_profile_photo,
+    CAST(m.[mentor_job_title] AS NVARCHAR(MAX)) AS mentor_job_title,
+    CAST(m.[mentor_company_name] AS NVARCHAR(MAX)) AS mentor_company_name,
+    m.[mentor_years_of_experience],
+    m.[mentor_academic_qualification],
+    m.[mentor_language],
+    m.[mentor_timezone],
+    m.[mentor_country],
+    m.[mentor_session_price],
+    m.[mentor_currency_type],
+    m.[mentor_city],
+    m.[mentor_institute],
+    CAST(m.[mentor_passion_dtls] AS NVARCHAR(MAX)) AS mentor_passion_dtls,
+    CAST(m.[mentor_area_expertise] AS NVARCHAR(MAX)) AS mentor_area_expertise,
+    CAST(m.[mentor_domain] AS NVARCHAR(MAX)) AS mentor_domain,
+    (
+        SELECT 
+            t.[mentor_timeslot_id],
+            t.[mentor_dtls_id],
+            t.[mentor_timeslot_rec_indicator],
+            t.[mentor_timeslot_rec_end_timeframe]
+        FROM 
+            [dbo].[mentor_timeslots_dtls] t
+        WHERE 
+            t.[mentor_dtls_id] = m.[mentor_dtls_id]
+        FOR JSON PATH
+    ) AS timeslot_list,
+    (
+        SELECT 
+            b.[mentor_dtls_id],
+            b.[mentor_session_booking_date],
+            b.[mentor_booking_confirmed],
+            b.[mentor_session_status],
+            b.[mentor_timeslot_dtls_id]
+        FROM 
+            [dbo].[mentor_booking_appointments_dtls] b
+        WHERE 
+            b.[mentor_dtls_id] = m.[mentor_dtls_id] 
+            AND (b.[mentor_booking_confirmed] = 'Yes' OR b.[mentor_booking_confirmed] = 'No')
+            AND b.[mentor_session_booking_date] >= CONVERT(DATE, GETDATE())  -- Only future or current bookings
+        FOR JSON PATH
+    ) AS booking_dtls_list,
+    ISNULL(
+        (SELECT COUNT(*) 
+        FROM [dbo].[mentor_booking_appointments_dtls] b
+        WHERE b.[mentor_dtls_id] = m.[mentor_dtls_id] 
+          AND b.[mentor_session_status] = 'completed' 
+          AND b.[trainee_session_status] = 'completed'),
+        0
+    ) AS mentor_session_count,
+    ISNULL(
+        (SELECT COUNT(*) 
+        FROM [dbo].[mentor_feedback_dtls] f
+        WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]),
+        0
+    ) AS feedback_count,
+    (
+        SELECT AVG(CAST(f.[mentor_feedback_session_overall_rating] AS FLOAT))
+        FROM [dbo].[mentor_feedback_dtls] f
+        WHERE f.[mentor_user_dtls_id] = m.[mentor_user_dtls_id]
+    ) AS avg_mentor_rating
+FROM 
+    [dbo].[users_dtls] u
+JOIN 
+    [dbo].[mentor_dtls] m
+ON 
+    u.[user_dtls_id] = m.[mentor_user_dtls_id]
+JOIN 
+    mentors_keyword_mapping km ON km.mentor_keyword_mapping_category = @SearchCategory
+WHERE
+    m.[mentor_approved_status] = 'Yes'
+    AND LOWER(m.[mentor_job_title]) LIKE '%' + LOWER(km.mentor_keyword_mapping_keyword) + '%';`;
 // to fetch the booking details and timeslots feedbacks also and everything this is working right now
 export const fetchSingleMentorQueryWithBookings = `SELECT 
     u.[user_dtls_id],
