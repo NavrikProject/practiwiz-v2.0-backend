@@ -10,7 +10,7 @@ export const PasswordChangedHeading = `Password changed`;
 export const ResetPasswordHeading = `Reset Password`;
 export const MentorProfileHeading = "Profile Details";
 export const MenteeProfileHeading = "Profile Details";
-
+export const CaseStudyHeading = "Purchase case study";
 export const AccountCreatedHeading = "Account created";
 export const MentorDisApprovedHeading = `Not Approved as a Mentor`;
 export const CaseStudySubmittedHeading = "Case study submitted";
@@ -27,3 +27,5 @@ export const AccountCreatedMessage =
   "Successfully you have created the account";
 export const CaseStudySubmittedMessage =
   "Successfully you have submitted the case study";
+export const CaseStudyPurchasedMessage =
+  "You have successfully purchased the case study";

@@ -90,7 +90,9 @@ TimeslotDetails AS (
         t.[mentor_timeslot_rec_indicator],
         t.[mentor_timeslot_rec_end_timeframe],
         t.[mentor_timeslot_rec_cr_date],
-        t.[mentor_timeslot_booking_status]
+        t.[mentor_timeslot_booking_status],
+        t.[mentor_timeslot_duration],
+        t.[mentor_timeslot_status]
     FROM 
         [dbo].[mentor_timeslots_dtls] t
 ),
@@ -114,12 +116,17 @@ CaseStudyDetails AS (
         c.[case_study_dtls_mentor_id],
         c.[case_study_dtls_topic_category],
         c.[case_study_dtls_title],
-        c.[case_study_dtls_lesson],
-        c.[case_study_dtls_people_after_read],
+        c.[case_study_dtls_summary],
+        c.[case_study_dtls_background],
+        c.[case_study_dtls_main_challenge],
+        c.[case_study_dtls_no_characters],
         c.[case_study_dtls_roles],
         c.[case_study_dtls_main_role],
-        c.[case_study_dtls_main_challenge],
-        c.[case_study_cr_date]
+      c.[case_study_dtls_lesson_learn],
+      c.[case_study_dtls_skills_to_develop],
+      c.[case_study_dtls_resources],
+      c.[case_study_cr_date],
+      c.[case_study_update_date]
     FROM 
         [dbo].[case_studies_dtls] c
 ),
@@ -211,14 +218,16 @@ SELECT
         SELECT 
             * 
         FROM TimeslotDetails t
-        WHERE t.[mentor_dtls_id] = m.[mentor_dtls_id]
+        WHERE t.[mentor_dtls_id] = m.[mentor_dtls_id] and t.[mentor_timeslot_status] = 'unarchieve'
         FOR JSON PATH
     ) AS timeslot_list,
     (
         SELECT 
             * 
         FROM NotificationDetails n
-        WHERE n.[notification_user_dtls_id] = u.[user_dtls_id]
+        WHERE n.[notification_user_dtls_id] = u.[user_dtls_id] 
+        ORDER BY 
+            n.[notification_created_at] DESC
         FOR JSON PATH
     ) AS notification_list,
     (
@@ -305,6 +314,8 @@ export const fetchMentorNotUpdatedDetailsQuery = `
                 * 
             FROM notifications_dtls n
             WHERE n.[notification_user_dtls_id] = u.[user_dtls_id]
+            ORDER BY 
+            n.[notification_created_at] DESC
             FOR JSON PATH
         ) AS notification_list
     FROM 

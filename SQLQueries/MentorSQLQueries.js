@@ -586,11 +586,13 @@ export const fetchSingleMentorProfileForPublicQuery = `SELECT
             t.[mentor_timeslot_rec_indicator],
             t.[mentor_timeslot_rec_end_timeframe],
             t.[mentor_timeslot_rec_cr_date],
-            t.[mentor_timeslot_booking_status]
+            t.[mentor_timeslot_booking_status],
+            t.[mentor_timeslot_duration],
+            t.[mentor_timeslot_status]
         FROM 
             [dbo].[mentor_timeslots_dtls] t
         WHERE 
-            t.[mentor_dtls_id] = m.[mentor_dtls_id]
+            t.[mentor_dtls_id] = m.[mentor_dtls_id] and t.[mentor_timeslot_status] = 'unarchieve'
         FOR JSON PATH
     ) AS timeslot_list,
     (
@@ -673,7 +675,8 @@ export const MentorBookingOrderQuery = `
                 [id],
                 [offer_id],
                 [receipt],
-                [status]
+                [status],
+                [mentor_bookings_raz_order_type]
             ) 
             VALUES 
             (
@@ -690,10 +693,49 @@ export const MentorBookingOrderQuery = `
                 @id,
                 @offerId,
                 @receipt,
-                @status
+                @status,
+                @type
             )
         `;
 
+export const RazorpayBookingOrderQuery = `
+            INSERT INTO [dbo].[razorpay_booking_order_dtls] 
+            (
+                [razorpay_booking_order_dtls_mc_id],
+                [razorpay_booking_order_dtls_user_id],
+                [user_email],
+                [amount],
+                [amount_due],
+                [amount_paid],
+                [attempts],
+                [created_at],
+                [currency],
+                [entity],
+                [id],
+                [offer_id],
+                [receipt],
+                [status],
+                [razorpay_booking_order_dtls_type]
+            ) 
+            VALUES 
+            (
+                @bookingMCRazDltsId,
+                @bookingRazUserDtlsId,
+                @userEmail,
+                @amount,
+                @amountDue,
+                @amountPaid,
+                @attempts,
+                @createdAt,
+                @currency,
+                @entity,
+                @id,
+                @offerId,
+                @receipt,
+                @status,
+                @type
+            )
+        `;
 // Prepare the SQL query
 export const MentorBookingAppointmentQuery = `
             INSERT INTO [dbo].[mentor_booking_appointments_dtls] 

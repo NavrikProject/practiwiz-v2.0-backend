@@ -3,6 +3,7 @@
   "appService.defaultWebAppToDeploy": "None",
   "cSpell.words": [
     "appt",
+    "archieve",
     "dlts",
     "logindate",
     "logintime",
@@ -13,6 +14,7 @@
     "sugg",
     "timeframe",
     "timeslot",
-    "timeslots"
+    "timeslots",
+    "unarchieve"
   ]
 }
