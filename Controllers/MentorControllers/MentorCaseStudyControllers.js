@@ -15,13 +15,16 @@ import { insertMentorCaseStudyQuery } from "../../SQLQueries/MentorDashboard/Cas
 
 export async function createMentorCaseInput(req, res) {
   const {
-    caseTopic,
-    caseTopicTitle,
-    lesson,
-    futureSkills,
-    characters,
-    roleOfMainCharacter,
+    caseBackground,
+    caseCategory,
+    caseSummary,
+    caseTitle,
     challenge,
+    characters,
+    futureSkills,
+    lesson,
+    resource,
+    roleOfMainCharacter,
   } = req.body.data;
   const { mentorUserId, mentorDtlsId, roles } = req.body;
   try {
@@ -31,14 +34,21 @@ export async function createMentorCaseInput(req, res) {
       const request = new sql.Request();
       request.input("userId", sql.Int, mentorUserId);
       request.input("mentorId", sql.Int, mentorDtlsId);
-      request.input("topicCategory", sql.VarChar(100), caseTopic);
-      request.input("title", sql.Text, caseTopicTitle);
-      request.input("lesson", sql.Text, lesson);
-      request.input("peopleAfterRead", sql.Text, futureSkills);
-      request.input("noCharacters", sql.Int, characters);
+      request.input("caseCategory", sql.VarChar(100), caseCategory);
+      request.input("caseTitle", sql.Text, caseTitle);
+      request.input("caseSummary", sql.Text, caseSummary);
+      request.input("caseBackground", sql.Text, caseBackground);
+      request.input("challenge", sql.Text, challenge);
+      request.input("characters", sql.Int, characters);
       request.input("roles", sql.Text, roles);
-      request.input("mainRole", sql.VarChar(100), roleOfMainCharacter);
-      request.input("mainChallenge", sql.Text, challenge);
+      request.input(
+        "roleOfMainCharacter",
+        sql.VarChar(100),
+        roleOfMainCharacter
+      );
+      request.input("lesson", sql.Text, lesson);
+      request.input("futureSkills", sql.Text, futureSkills);
+      request.input("resource", sql.Text, resource);
       request.query(insertMentorCaseStudyQuery, (err, result) => {
         if (err)
           return res.json({

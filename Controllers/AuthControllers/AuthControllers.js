@@ -5,6 +5,7 @@ import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
 import moment from "moment";
 import sgMail from "@sendgrid/mail";
+import { OAuth2Client } from "google-auth-library";
 import { userDtlsQuery } from "../../SQLQueries/MentorSQLQueries.js";
 import { sendEmail } from "../../Middleware/AllFunctions.js";
 import {
@@ -26,6 +27,7 @@ dotenv.config();
 import { MentorUserFIrstRegDtlsQuery } from "../../SQLQueries/Auth/AuthSQLqueries.js";
 // user registration status table insert
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export async function UserRegistrationStatus(req, res) {
   const { firstName, lastName, email, UserType, phoneNumber } = req.body;
   const lowEmail = email.toLowerCase();
@@ -469,5 +471,21 @@ export async function resetPassword(req, res) {
     }
   } catch (error) {
     return res.send("There is something went wrong. Please try again later.");
+  }
+}
+
+export async function GoogleLogin(req, res) {
+  const { token } = req.body;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    // Send user information back to client
+    console.log(payload);
+    res.json({ user: payload });
+  } catch (error) {
+    res.status(401).json({ error: "Invalid token" });
   }
 }

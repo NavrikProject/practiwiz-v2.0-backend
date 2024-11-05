@@ -3,6 +3,7 @@ let router = routers.Router();
 import {
   changeUserPassword,
   forgotPassword,
+  GoogleLogin,
   login,
   MentorFirstRegister,
   resetPassword,
@@ -23,4 +24,5 @@ router.post("/forgot-password", forgotPassword);
 
 router.post("/reset-password", verifyPasswordUserToken, resetPassword);
 
+router.post("/google/login", GoogleLogin);
 export default router;

@@ -26,7 +26,8 @@ import adminCaseStudiesDashboardRoute from "./Routes/AdminDashboard/AdminDashboa
 import mentorDashboardUpdateRoute from "./Routes/MentorRoutes/MentorDashboardUpdateRoutes.js";
 import menteeDashboardRoute from "./Routes/MenteeRoutes/MenteeDashboardRoutes.js";
 import menteeProfileDashboardRoute from "./Routes/MenteeRoutes/MenteeProfileSettings.js";
-
+import caseStudiesRoute from "./Routes/CaseStudies/CaseStudyRoutes.js";
+import instituteDashboardRoute from "./Routes/InstituteRoutes/InstituteDashboardRoute.js";
 import config from "./Config/dbConfig.js";
 import mentorDashboardCaseStudyRouter from "./Routes/MentorRoutes/MentorCaseStudyRoute.js";
 import { InsertNotificationHandler } from "./Middleware/NotificationFunction.js";
@@ -132,10 +133,15 @@ app.use("/api/v1/mentee/dashboard/profile", menteeProfileDashboardRoute);
 
 // institute routes
 app.use("/api/v1/institute", instituteRoute);
+app.use("/api/v1/institute/dashboard", instituteDashboardRoute);
 
 // admin dashboard
 app.use("/api/v1/admin/dashboard", adminDashboardRoute);
 app.use("/api/v1/admin/dashboard/case-studies", adminCaseStudiesDashboardRoute);
+
+// case studies routes
+app.use("/api/v1/case-studies", caseStudiesRoute);
+
 async function connectToDatabases() {
   try {
     sql.connect(config, (err, db) => {

@@ -413,76 +413,84 @@ export async function MentorUpdateMentorProfile3(req, res) {
           if (err) return res.json({ error: err.message });
           if (result.recordset.length > 0) {
             const mentorDtlsId = result.recordset[0].mentor_dtls_id;
-            if (typeof Mon !== "undefined" && Mon !== null) {
-              const monDayParsedArray = JSON.parse(Mon);
-              UpdateMentorTimeSlots(
-                monDayParsedArray,
-                mentorDtlsId,
-                "Mon",
-                timestamp
-              );
-            }
-            if (typeof Tue !== "undefined" && Tue !== null) {
-              const tueDayParsedArray = JSON.parse(Tue);
-              UpdateMentorTimeSlots(
-                tueDayParsedArray,
-                mentorDtlsId,
-                "Tue",
-                timestamp
-              );
-            }
-            if (typeof Wed !== "undefined" && Wed !== null) {
-              const wedDayParsedArray = JSON.parse(Wed);
-              UpdateMentorTimeSlots(
-                wedDayParsedArray,
-                mentorDtlsId,
-                "Wed",
-                timestamp
-              );
-            }
-            if (typeof Thu !== "undefined" && Thu !== null) {
-              const thuDayParsedArray = JSON.parse(Thu);
-              UpdateMentorTimeSlots(
-                thuDayParsedArray,
-                mentorDtlsId,
-                "Wed",
-                timestamp
-              );
-            }
-            if (typeof Fri !== "undefined" && Fri !== null) {
-              const friDayParsedArray = JSON.parse(Fri);
-              UpdateMentorTimeSlots(
-                friDayParsedArray,
-                mentorDtlsId,
-                "Fri",
-                timestamp
-              );
-            }
-            if (typeof Sat !== "undefined" && Sat !== null) {
-              const satDayParsedArray = JSON.parse(Sat);
-              UpdateMentorTimeSlots(
-                satDayParsedArray,
-                mentorDtlsId,
-                "Sat",
-                timestamp
-              );
-            }
-            if (typeof Sun !== "undefined" && Sun !== null) {
-              const sunDayParsedArray = JSON.parse(Sun);
-              UpdateMentorTimeSlots(
-                sunDayParsedArray,
-                mentorDtlsId,
-                "Sun",
-                timestamp
-              );
-            }
-            const notificationHandler = await InsertNotificationHandler(
-              userDtlsId,
-              InfoMsg,
-              MentorProfileHeading,
-              MentorProfileChangedMessage
+            request.input("timeslotMentorDtlsId", sql.Int, mentorDtlsId);
+            request.query(
+              "update mentor_timeslots_dtls set mentor_timeslot_status = 'archieve' where mentor_dtls_id = @timeslotMentorDtlsId",
+              async (err, result) => {
+                if (typeof Mon !== "undefined" && Mon !== null) {
+                  const monDayParsedArray = JSON.parse(Mon);
+                  UpdateMentorTimeSlots(
+                    monDayParsedArray,
+                    mentorDtlsId,
+                    "Mon",
+                    timestamp
+                  );
+                }
+                if (typeof Tue !== "undefined" && Tue !== null) {
+                  const tueDayParsedArray = JSON.parse(Tue);
+                  UpdateMentorTimeSlots(
+                    tueDayParsedArray,
+                    mentorDtlsId,
+                    "Tue",
+                    timestamp
+                  );
+                }
+                if (typeof Wed !== "undefined" && Wed !== null) {
+                  const wedDayParsedArray = JSON.parse(Wed);
+                  UpdateMentorTimeSlots(
+                    wedDayParsedArray,
+                    mentorDtlsId,
+                    "Wed",
+                    timestamp
+                  );
+                }
+                if (typeof Thu !== "undefined" && Thu !== null) {
+                  const thuDayParsedArray = JSON.parse(Thu);
+                  UpdateMentorTimeSlots(
+                    thuDayParsedArray,
+                    mentorDtlsId,
+                    "Wed",
+                    timestamp
+                  );
+                }
+                if (typeof Fri !== "undefined" && Fri !== null) {
+                  const friDayParsedArray = JSON.parse(Fri);
+                  UpdateMentorTimeSlots(
+                    friDayParsedArray,
+                    mentorDtlsId,
+                    "Fri",
+                    timestamp
+                  );
+                }
+                if (typeof Sat !== "undefined" && Sat !== null) {
+                  const satDayParsedArray = JSON.parse(Sat);
+                  UpdateMentorTimeSlots(
+                    satDayParsedArray,
+                    mentorDtlsId,
+                    "Sat",
+                    timestamp
+                  );
+                }
+                if (typeof Sun !== "undefined" && Sun !== null) {
+                  const sunDayParsedArray = JSON.parse(Sun);
+                  UpdateMentorTimeSlots(
+                    sunDayParsedArray,
+                    mentorDtlsId,
+                    "Sun",
+                    timestamp
+                  );
+                }
+                const notificationHandler = await InsertNotificationHandler(
+                  userDtlsId,
+                  InfoMsg,
+                  MentorProfileHeading,
+                  MentorProfileChangedMessage
+                );
+                return res.json({
+                  success: "Successfully updated the time slots",
+                });
+              }
             );
-            return res.json({ success: "Successfully updated the time slots" });
           } else {
             return res.json({
               error:
@@ -498,83 +506,97 @@ export async function MentorUpdateMentorProfile3(req, res) {
     });
   }
 }
-function UpdateMentorTimeSlots(array, mentorDtlsId, day, timestamp) {
+
+async function UpdateMentorTimeSlots(array, mentorDtlsId, day, timestamp) {
   try {
-    sql.connect(config, (err, conn) => {
-      if (conn) {
-        const request = new sql.Request();
-        array.forEach((item) => {
-          const FromHour = item.from.hours;
-          const FromMinute = item.from.minutes;
-          const FromMeridian = item.from.ampm;
-          const ToHour = item.to.hours;
-          const ToMinute = item.to.minutes;
-          const ToMeridian = item.to.ampm;
-          let mentorRecType = item.recurring.mentor_timeslot_rec_indicator;
-          const mentorRecEndDate = item.date.Mentor_timeslot_rec_end_date;
-          const FromTime = FromHour + ":" + FromMinute + FromMeridian;
-          const ToTime = ToHour + ":" + ToMinute + ToMeridian;
-          if (
-            mentorRecType === "" ||
-            mentorRecType === "undefined" ||
-            mentorRecType === null
-          ) {
-            mentorRecType = "Daily";
-          }
-          // First check if the record exists
-          request.query(
-            "SELECT COUNT(*) AS count FROM mentor_timeslots_dtls WHERE mentor_dtls_id = '" +
-              mentorDtlsId +
-              "' AND mentor_timeslot_day = '" +
-              day +
-              "' AND mentor_timeslot_from = '" +
-              FromTime +
-              "' AND mentor_timeslot_rec_indicator = '" +
-              mentorRecType +
-              "'",
-            (err, result) => {
-              if (err) {
-                console.log("Error checking existing record: " + err.message);
-              } else if (result.recordset[0].count > 0) {
-                console.log("Record already exists, insert skipped.");
-              } else {
-                // If no record exists, perform the insert
-                request.query(
-                  "INSERT INTO mentor_timeslots_dtls (mentor_dtls_id, mentor_timeslot_day, mentor_timeslot_from, mentor_timeslot_to, mentor_timeslot_rec_indicator, mentor_timeslot_rec_end_timeframe, mentor_timeslot_rec_cr_date, mentor_timeslot_rec_update_date) VALUES ('" +
-                    mentorDtlsId +
-                    "','" +
-                    day +
-                    "','" +
-                    FromTime +
-                    "','" +
-                    ToTime +
-                    "','" +
-                    mentorRecType +
-                    "','" +
-                    mentorRecEndDate +
-                    "','" +
-                    timestamp +
-                    "','" +
-                    timestamp +
-                    "')",
-                  (err, success) => {
-                    if (err) {
-                      console.log("Insert error: " + err.message);
-                    } else {
-                      console.log("Data inserted successfully: " + item);
-                    }
-                  }
-                );
-              }
-            }
-          );
-        });
+    // Establish connection
+    await sql.connect(config);
+
+    for (const item of array) {
+      // Extract properties with fallbacks
+      const {
+        from: { hours: FromHour, minutes: FromMinute, ampm: FromMeridian },
+        to: { hours: ToHour, minutes: ToMinute, ampm: ToMeridian },
+        recurring: { mentor_timeslot_rec_indicator: mentorRecType = "Daily" },
+        date: { Mentor_timeslot_rec_end_date: mentorRecEndDate },
+        slotDuration: { slotDuration },
+      } = item;
+
+      // Format times
+      const FromTime = `${FromHour}:${FromMinute}${FromMeridian}`;
+      const ToTime = `${ToHour}:${ToMinute}${ToMeridian}`;
+
+      // Handle empty recurring type
+      const recurrenceType = !mentorRecType ? "Daily" : mentorRecType;
+
+      // Create a new SQL request for checking existing records
+      const checkRequest = new sql.Request();
+
+      // Check if the record already exists
+      const checkQuery = `
+        SELECT COUNT(*) AS count 
+        FROM mentor_timeslots_dtls 
+        WHERE mentor_dtls_id = @mentorDtlsId 
+          AND mentor_timeslot_day = @day 
+          AND mentor_timeslot_from = @FromTime 
+          AND mentor_timeslot_rec_indicator = @recurrenceType`;
+
+      const checkResult = await checkRequest
+        .input("mentorDtlsId", sql.Int, mentorDtlsId)
+        .input("day", sql.VarChar, day)
+        .input("FromTime", sql.VarChar, FromTime)
+        .input("recurrenceType", sql.VarChar, recurrenceType)
+        .query(checkQuery);
+
+      if (checkResult.recordset[0].count > 0) {
+        console.log(checkResult);
+        // Create a new SQL request for updating the existing record
+        const updateRequest = new sql.Request();
+        const updateQuery = `
+          UPDATE mentor_timeslots_dtls 
+          SET mentor_timeslot_status = 'unarchieve' 
+          WHERE mentor_dtls_id = @mentorDtlsId AND mentor_timeslot_day = @day 
+          AND mentor_timeslot_from = @FromTime 
+          AND mentor_timeslot_rec_indicator = @recurrenceType`;
+
+        const updateResult = await updateRequest
+          .input("mentorDtlsId", sql.Int, mentorDtlsId)
+          .input("day", sql.VarChar, day)
+          .input("FromTime", sql.VarChar, FromTime)
+          .input("recurrenceType", sql.VarChar, recurrenceType)
+          .query(updateQuery);
+        if (updateResult.rowsAffected[0] > 0) {
+          console.log("Timeslot unarchived successfully.");
+        } else {
+          console.log("No matching record found to unarchive.");
+        }
+      } else {
+        // Create a new SQL request for inserting a new record
+        const insertRequest = new sql.Request();
+        const insertQuery = `
+          INSERT INTO mentor_timeslots_dtls 
+          (mentor_dtls_id, mentor_timeslot_day, mentor_timeslot_from, mentor_timeslot_to, mentor_timeslot_rec_indicator, mentor_timeslot_rec_end_timeframe, mentor_timeslot_rec_cr_date, mentor_timeslot_rec_update_date, mentor_timeslot_duration) 
+          VALUES 
+          (@mentorDtlsId, @day, @FromTime, @ToTime, @recurrenceType, @mentorRecEndDate, @timestamp, @timestamp, @slotDuration)`;
+
+        await insertRequest
+          .input("mentorDtlsId", sql.Int, mentorDtlsId)
+          .input("day", sql.VarChar, day)
+          .input("FromTime", sql.VarChar, FromTime)
+          .input("ToTime", sql.VarChar, ToTime)
+          .input("recurrenceType", sql.VarChar, recurrenceType)
+          .input("mentorRecEndDate", sql.VarChar, mentorRecEndDate)
+          .input("timestamp", sql.Date, timestamp)
+          .input("slotDuration", sql.VarChar, slotDuration)
+          .query(insertQuery);
+        console.log("Data inserted successfully:", item);
       }
-    });
+    }
   } catch (error) {
-    console.log(error.message);
+    console.error("Error in UpdateMentorTimeSlots:", error.message);
   }
 }
+
 export async function MentorUpdateMentorProfile4(req, res) {
   const {
     Mentor_Domain,

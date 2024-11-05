@@ -7,6 +7,7 @@ import Razorpay from "razorpay";
 import {
   MentorBookingAppointmentQuery,
   MentorBookingOrderQuery,
+  RazorpayBookingOrderQuery,
 } from "../../SQLQueries/MentorSQLQueries.js";
 import {
   FetchMentorBookingAppointmentQuery,
@@ -28,7 +29,7 @@ dotenv.config();
 
 //create razor pay order
 export async function createMentorRazorPayOrder(req, res, next) {
-  const { mentorId, menteeEmail, userId } = req.body;
+  const { mentorId, menteeEmail, userId, mentorTimeSlotDuration } = req.body;
   try {
     sql.connect(config, (err) => {
       if (err) {
@@ -47,20 +48,25 @@ export async function createMentorRazorPayOrder(req, res, next) {
             });
           if (result.recordset.length > 0) {
             const mentorPrice = result.recordset[0].mentor_session_price;
+            if (mentorTimeSlotDuration === "30") {
+              var updateMentorPrice = mentorPrice / 2;
+            } else if (mentorTimeSlotDuration === "60") {
+              var updateMentorPrice = mentorPrice;
+            }
             const instance = new Razorpay({
               key_id: process.env.RAZORPAY_KEY_ID,
               key_secret: process.env.RAZORPAY_KEY_SECRET_STRING,
             });
             const options = {
-              amount: mentorPrice * 100,
+              amount: updateMentorPrice * 100,
               currency: "INR",
             };
             instance.orders
               .create(options)
               .then((order) => {
-                request.input("mentorBookingRazDltsId", sql.Int, mentorId);
-                request.input("menteeBookingRazUserDtlsId", sql.Int, userId);
-                request.input("menteeEmail", sql.VarChar, menteeEmail);
+                request.input("bookingMCRazDltsId", sql.Int, mentorId);
+                request.input("bookingRazUserDtlsId", sql.Int, userId);
+                request.input("userEmail", sql.VarChar, menteeEmail);
                 request.input("amount", sql.Decimal, order.amount);
                 request.input("amountDue", sql.Decimal, order.amount_due);
                 request.input("amountPaid", sql.Decimal, order.amount_paid);
@@ -72,7 +78,8 @@ export async function createMentorRazorPayOrder(req, res, next) {
                 request.input("offerId", sql.VarChar, order.offer_id);
                 request.input("receipt", sql.VarChar, order.receipt);
                 request.input("status", sql.VarChar, order.status);
-                request.query(MentorBookingOrderQuery, (err, result) => {
+                request.input("type", sql.VarChar, "mentor booking");
+                request.query(RazorpayBookingOrderQuery, (err, result) => {
                   if (err) return res.json({ error: err.message });
                   if (result) return res.json({ success: order });
                 });

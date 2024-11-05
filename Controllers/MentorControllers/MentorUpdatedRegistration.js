@@ -307,7 +307,6 @@ export async function MentorUpdateAdditionalDetails(req, res, next) {
     mentorName,
   } = req.body;
   const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
-
   try {
     sql.connect(config, (err, db) => {
       if (err) return res.json({ error: "There is some error while applying" });
@@ -396,8 +395,9 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
           const ToHour = item.to.hours;
           const ToMinute = item.to.minutes;
           const ToMeridian = item.to.ampm;
-          let mentorRecType = item.recurring.Mentor_timeslot_rec_indicator;
+          let mentorRecType = item.recurring.mentor_timeslot_rec_indicator;
           const mentorRecEndDate = item.date.Mentor_timeslot_rec_end_date;
+          const mentorTimeSlotDuration = item.slotDuration.slotDuration;
           const FromTime = FromHour + ":" + FromMinute + FromMeridian;
           const ToTime = ToHour + ":" + ToMinute + ToMeridian;
           if (
@@ -408,7 +408,7 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
             mentorRecType = "Daily";
           }
           request.query(
-            "INSERT INTO mentor_timeslots_dtls (mentor_dtls_id,mentor_timeslot_day,mentor_timeslot_from,mentor_timeslot_to,mentor_timeslot_rec_indicator,mentor_timeslot_rec_end_timeframe,mentor_timeslot_rec_cr_date,mentor_timeslot_rec_update_date) VALUES('" +
+            "INSERT INTO mentor_timeslots_dtls (mentor_dtls_id,mentor_timeslot_day,mentor_timeslot_from,mentor_timeslot_to,mentor_timeslot_rec_indicator,mentor_timeslot_rec_end_timeframe,mentor_timeslot_rec_cr_date,mentor_timeslot_rec_update_date,mentor_timeslot_duration) VALUES('" +
               mentorDtlsId +
               "','" +
               day +
@@ -424,6 +424,8 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
               timestamp +
               "','" +
               timestamp +
+              "','" +
+              mentorTimeSlotDuration +
               "')",
             (err, success) => {
               if (err) {
