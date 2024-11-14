@@ -4,6 +4,8 @@ import sql from "mssql";
 import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
 import {
+  convertTo24HourFormat,
+  scheduleReminderHandler,
   sendEmail,
   uploadMentorPhotoToAzure,
 } from "../../Middleware/AllFunctions.js";
@@ -28,6 +30,11 @@ import {
   AccountCreatedMessage,
   SuccessMsg,
 } from "../../Messages/Messages.js";
+import {
+  mentorBookingRemainderEmailTemplate,
+  traineeBookingRemainderEmailTemplate,
+} from "../../EmailTemplates/MentorEmailTemplate/MentorSessionEmailTemplates.js";
+import { MentorSessionBookingRemainderSqlQuery } from "../../SQLQueries/MentorDashboard/MentorNotificationSqlQuery.js";
 dotenv.config();
 
 // registering of the mentor application
@@ -413,7 +420,6 @@ export async function fetch10MentorInHome(req, res, next) {
 
 export async function fetchExpertMentorsInPublic(req, res, next) {
   const { expert } = req.body;
-  console.log(req.body);
   try {
     sql.connect(config, (err, db) => {
       if (err) {
@@ -479,3 +485,72 @@ export async function test(req, res) {
     });
   }
 }
+
+// remainder will be sent on before 10 minutes to mentor
+function sentEmailRemainderToMentorAndTrainee(beforeMinutes) {
+  try {
+    sql.connect(config, (err) => {
+      if (err) return console.log(err.message);
+      const request = new sql.Request();
+      request.query(
+        MentorSessionBookingRemainderSqlQuery,
+        async (err, result) => {
+          if (err) return console.log(err.message);
+          result?.recordset.forEach(async (res) => {
+            const menteeEmail = res.mentee_email;
+            const mentorEmail = res.mentor_email;
+            const menteeName = res.mentee_firstname + " " + res.mentee_lastname;
+            const mentorName = res.mentor_firstname + " " + res.mentor_lastname;
+            const bookingDate = new Date(
+              res.mentor_session_booking_date
+            ).toDateString();
+            const slotTime = res.mentor_booking_time;
+            let bookingDbDate = new Date(res.mentor_session_booking_date);
+            let time = await convertTo24HourFormat(
+              res.mentor_booking_starts_time
+            );
+            let [hour, min] = time?.split(":").map(Number);
+            // Set the correct hours and minutes on the booking date
+            bookingDbDate.setUTCHours(hour);
+            bookingDbDate.setUTCMinutes(min);
+            bookingDbDate.setUTCSeconds(0);
+            bookingDbDate.setUTCMilliseconds(0);
+            const menteeMessage = traineeBookingRemainderEmailTemplate(
+              menteeEmail,
+              menteeName,
+              mentorName,
+              bookingDate,
+              slotTime,
+              beforeMinutes,
+              "https://www.practiwiz.com/mentee/dashboard"
+            );
+            const mentorMessage = mentorBookingRemainderEmailTemplate(
+              mentorEmail,
+              mentorName,
+              menteeName,
+              bookingDate,
+              slotTime,
+              beforeMinutes,
+              "https://www.practiwiz.com/mentor/dashboard"
+            );
+            scheduleReminderHandler(
+              bookingDbDate,
+              beforeMinutes,
+              mentorMessage,
+              menteeMessage
+            );
+          });
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+//10 minutes function
+sentEmailRemainderToMentorAndTrainee(40);
+// 5 minutes function
+sentEmailRemainderToMentorAndTrainee(35);
+// started function
+sentEmailRemainderToMentorAndTrainee(0);

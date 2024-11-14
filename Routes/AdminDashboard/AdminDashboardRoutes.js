@@ -6,6 +6,7 @@ import {
   getAllMentorUpcomingAdminDashboard,
   getAllNotApprovedMentorsListAdminDashboard,
   getAllUsersListAdminDashboard,
+  sendEmailAlertForMentorDashboard,
   UpdateMentorToApprove,
   UpdateMentorToDisapprove,
 } from "../../Controllers/AdminDashboardControllers/AdminDashboardControllers.js";
@@ -55,5 +56,11 @@ router.get(
   "/mentors/booking/in-completed-session-lists",
   verifyAdminTokenAndAuthorization,
   getAllMentorInCompletedAdminDashboard
+);
+
+router.post(
+  "/mentors/progress/email-alert",
+  verifyAdminTokenAndAuthorization,
+  sendEmailAlertForMentorDashboard
 );
 export default router;

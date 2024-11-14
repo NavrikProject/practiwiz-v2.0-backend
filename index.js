@@ -33,6 +33,7 @@ import mentorDashboardCaseStudyRouter from "./Routes/MentorRoutes/MentorCaseStud
 import { InsertNotificationHandler } from "./Middleware/NotificationFunction.js";
 import { accountCreatedEmailTemplate } from "./EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
 import { sendEmail } from "./Middleware/AllFunctions.js";
+import { autoApproveFetchAllNotApprovedMentorQuery } from "./SQLQueries/AdminDashboard/AdminSqlQueries.js";
 
 dotenv.config();
 
@@ -159,9 +160,6 @@ async function connectToDatabases() {
   }
 }
 connectToDatabases();
-setInterval(() => {
-  connectToDatabases();
-}, 3600000);
 
 app.get("/test/email", async (req, res) => {
   const msg = accountCreatedEmailTemplate(
@@ -255,6 +253,63 @@ app.get("/getLinkedInProfile", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch profile data" });
   }
 });
+
+async function getAllNotApprovedMentorsListAdminDashboard(req, res, next) {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) {
+        return res.json({
+          error: err.message,
+        });
+      }
+      if (db) {
+        const request = new sql.Request();
+        request.query(
+          autoApproveFetchAllNotApprovedMentorQuery,
+          (err, result) => {
+            if (err) {
+              console.log(err.message);
+            }
+            if (result?.recordset.length > 0) {
+              for (const recordset of result.recordset) {
+                const total_progress = recordset.total_progress;
+                if (parseInt(total_progress) >= 80) {
+                  const mentorUserDtlsId = recordset.mentor_user_dtls_id;
+                  const request = new sql.Request();
+                  request.input("mentorUserId", sql.Int, mentorUserDtlsId);
+                  request.query(
+                    "update mentor_dtls set mentor_approved_status = 'Yes'  where mentor_user_dtls_id = @mentorUserId ",
+                    (err, result) => {
+                      if (err) {
+                        console.log(err.message);
+                      }
+                      if (result) {
+                        console.log(result);
+                      }
+                    }
+                  );
+                }
+              }
+            } else {
+              console.log({
+                error: "There are no current mentor applications.",
+              });
+            }
+          }
+        );
+      }
+    });
+  } catch (error) {
+    return console.log({
+      error: error.message,
+    });
+  }
+}
+// setInterval(() => {
+//   connectToDatabases();
+//   getAllNotApprovedMentorsListAdminDashboard();
+// }, 86400);
+
 // Start the server
 app.listen(port, () => {
   console.log(`Running on port http://localhost:${port}`);
