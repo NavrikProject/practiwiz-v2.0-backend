@@ -12,16 +12,19 @@ import {
 } from "../../SQLQueries/AdminDashboard/AdminSqlQueries.js";
 import {
   mentorApplicationEmail,
+  mentorApplicationFillEmailAlertTemplate,
   mentorApprovedEmailTemplate,
 } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
 import { sendEmail } from "../../Middleware/AllFunctions.js";
 import { InsertNotificationHandler } from "../../Middleware/NotificationFunction.js";
 import {
   InfoMsg,
+  MentorApplicationProgressHeading,
   MentorApprovedHeading,
   MentorApprovedMsg,
   MentorDisApprovedHeading,
   MentorDisApprovedMsg,
+  MentorEmailAlertMessage,
   SuccessMsg,
   WarningMsg,
 } from "../../Messages/Messages.js";
@@ -273,6 +276,7 @@ export async function getAllMentorCompletedAdminDashboard(req, res, next) {
 }
 
 export async function getAllMentorInCompletedAdminDashboard(req, res, next) {
+  const { username, mentorEmail } = req.body;
   try {
     sql.connect(config, (err, db) => {
       if (err) {
@@ -300,6 +304,38 @@ export async function getAllMentorInCompletedAdminDashboard(req, res, next) {
         });
       }
     });
+  } catch (error) {
+    return res.json({
+      error: error.message,
+    });
+  }
+}
+
+export async function sendEmailAlertForMentorDashboard(req, res, next) {
+  const { userId, mentorName, mentorEmail } = req.body;
+  try {
+    const msg = mentorApplicationFillEmailAlertTemplate(
+      mentorEmail,
+      mentorName
+    );
+    const notResponse = await InsertNotificationHandler(
+      userId,
+      WarningMsg,
+      MentorApplicationProgressHeading,
+      MentorEmailAlertMessage
+    );
+    const response = await sendEmail(msg);
+    if (response === "True" || response === "true" || response === true) {
+      return res.json({
+        success: "Email alert send successfully",
+      });
+    }
+    if (response === "False" || response === "false" || response === false) {
+      return res.json({
+        error:
+          "There was an error sending the email notification. Please try again later",
+      });
+    }
   } catch (error) {
     return res.json({
       error: error.message,

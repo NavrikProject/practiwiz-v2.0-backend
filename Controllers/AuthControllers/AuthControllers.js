@@ -5,6 +5,7 @@ import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
 import moment from "moment";
 import sgMail from "@sendgrid/mail";
+import axios from "axios";
 import { OAuth2Client } from "google-auth-library";
 import { userDtlsQuery } from "../../SQLQueries/MentorSQLQueries.js";
 import { sendEmail } from "../../Middleware/AllFunctions.js";
@@ -170,8 +171,9 @@ export async function login(req, res) {
       }
       const request = new sql.Request();
       request.input("email", sql.VarChar, email);
+      request.input("active", sql.VarChar, "active");
       request.query(
-        `select * from users_dtls where user_email = @email`,
+        `select user_dtls_id,user_email,user_pwd,user_firstname,user_lastname,user_is_superadmin,user_type from users_dtls where user_email = @email AND user_profile_active_status = @active`,
         (err, result) => {
           if (result?.recordset.length > 0) {
             bcrypt.compare(
@@ -220,7 +222,7 @@ export async function login(req, res) {
           } else {
             return res.json({
               error:
-                "There is no account with that email address, user type, Please sign up! ",
+                "There is no account with that email address Please sign up! ",
             });
           }
         }
@@ -477,15 +479,66 @@ export async function resetPassword(req, res) {
 export async function GoogleLogin(req, res) {
   const { token } = req.body;
   try {
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    // Send user information back to client
-    console.log(payload);
-    res.json({ user: payload });
+    // Verify the Google token
+    const response = await axios.get(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`
+    );
+    if (response?.data) {
+      const { email } = response.data;
+      sql.connect(config, async (err) => {
+        if (err) {
+          return res.json({ error: err.message });
+        }
+        const request = new sql.Request();
+        request.input("email", sql.VarChar, email);
+        request.query(
+          `select * from users_dtls where user_email = @email`,
+          (err, result) => {
+            if (result?.recordset.length > 0) {
+              const accessToken = jwt.sign(
+                {
+                  user_id: result.recordset[0].user_dtls_id,
+                  user_role: result.recordset[0].user_is_superadmin,
+                },
+                process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
+                { expiresIn: "48h" }
+              );
+              const token = jwt.sign(
+                {
+                  user_id: result.recordset[0].user_dtls_id,
+                  user_email: result.recordset[0].user_email,
+                  user_firstname: result.recordset[0].user_firstname,
+                  user_lastname: result.recordset[0].user_lastname,
+                  user_type: result.recordset[0].user_type,
+                  user_role: result.recordset[0].user_is_superadmin,
+                },
+                process.env.JWT_LOGIN_SECRET_KEY,
+                { expiresIn: "48h" }
+              );
+              return res.json({
+                success: true,
+                token: token,
+                accessToken: accessToken,
+              });
+            } else {
+              return res.json({
+                error:
+                  "There is no account with that email address, user type, Please sign up! ",
+              });
+            }
+          }
+        );
+      });
+    } else {
+      return res.json({
+        error:
+          "There is an error while sign in with Google, Sign in using the password",
+      });
+    }
   } catch (error) {
-    res.status(401).json({ error: "Invalid token" });
+    return res.json({
+      error:
+        "There is an error while sign in with Google, Sign in using the password",
+    });
   }
 }

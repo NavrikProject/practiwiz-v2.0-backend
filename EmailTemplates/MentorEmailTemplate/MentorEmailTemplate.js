@@ -348,3 +348,103 @@ export const mentorDisApproveEmail = (mentorEmail, username) => {
     `,
   };
 };
+
+// mentor disapprove email
+export const mentorApplicationFillEmailAlertTemplate = (
+  mentorEmail,
+  username
+) => {
+  return {
+    to: `${mentorEmail}`, // Change to your recipient
+    from: "no-reply@practiwiz.com", // Change to your verified sender
+    subject: "Progress your mentor application.....",
+    html: `<section
+  style="
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f8fb;
+    padding: 50px 0;
+  "
+>
+  <div
+    style="
+      max-width: 600px;
+      margin: auto;
+      padding: 40px;
+      background-color: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    "
+  >
+    <div style="text-align: center; margin-bottom: 30px;">
+      <img
+        src="https://practiwizstorage.blob.core.windows.net/practiwizcontainer/logo.jpg"
+        alt="Practywiz Logo"
+        style="max-width: 160px; margin-bottom: 20px;"
+      />
+      <h2
+        style="
+          font-size: 24px;
+          text-transform: uppercase;
+          color: #2c3e50;
+          margin: 0;
+        "
+      >
+        Welcome to Practywiz
+      </h2>
+      <hr style="width: 80px; border: 1px solid #1abc9c; margin: 20px auto;" />
+    </div>
+    <!-- Greeting and Alert Message -->
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      Hi <b>${username}</b>,
+    </p>
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      We noticed that you haven't completed your application yet. Please make sure to fill out the required details on our website to be approved as a mentor at Practywiz.
+    </p>
+
+    <!-- Call to Action Button -->
+    <div style="text-align: center; margin: 30px 0;">
+      <a 
+        target="_blank"
+        href="https://www.practywiz.com/login"
+        style="
+          display: inline-block;
+          background-color: #1abc9c;
+          color: #ffffff;
+          text-decoration: none;
+          padding: 12px 20px;
+          border-radius: 5px;
+          font-size: 16px;
+        "
+        >Login to Complete Your Application</a
+      >
+    </div>
+
+    <!-- Additional Information -->
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      At <b>Practywiz</b>, we’re dedicated to supporting both mentors and mentees (Professionals and Students). Your expertise is highly valued, and we can’t wait to see the contributions you'll make. Remember, once you complete your application and start hosting sessions, you’ll be eligible to earn compensation and gain referrals to increase your earnings.
+    </p>
+
+    <!-- Support Section -->
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      If you have any questions or need support, don’t hesitate to reach out to us at <a href="mailto:wecare@practywiz.com" style="color: #008080; text-decoration: none;">wecare@practywiz.com</a>. We’re here to help!
+    </p>
+
+    <!-- Closing and Signature -->
+    <p style="font-size: 16px; color: #333333; line-height: 1.6;">
+      Best of luck in your mentorship journey!
+    </p>
+    <p style="font-size: 16px; line-height: 1.8; color: #333333; margin-top: 40px;">
+      Best Regards,<br />The Practywiz Team
+    </p>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <img
+        src="https://practiwizstorage.blob.core.windows.net/practiwizcontainer/logo.jpg"
+        alt="Practywiz Footer Logo"
+        style="max-width: 120px;"
+      />
+    </div>
+  </div>
+</section>`,
+  };
+};
