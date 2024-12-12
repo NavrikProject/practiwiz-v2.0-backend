@@ -307,3 +307,80 @@ VALUES
      @FeedbackRating, 
      @FeedbackDescription);
 `;
+export const mentorDtlsUpdatedRegistrationQuery2 = `
+INSERT INTO [dbo].[mentor_dtls] (
+    [mentor_user_dtls_id],
+    [mentor_phone_number],
+    [mentor_email],
+    [mentor_profile_photo],
+    [mentor_social_media_profile],
+    [mentor_job_title],
+    [mentor_company_name],
+    [mentor_years_of_experience],
+    [mentor_academic_qualification],
+    [mentor_recommended_area_of_mentorship],
+    [mentor_guest_lectures_interest],
+    [mentor_curating_case_studies_interest],
+    [mentor_sessions_free_of_charge],
+    [mentor_language],
+    [mentor_timezone],
+    [mentor_country],
+    [mentor_headline],   
+    [mentor_session_price],
+    [mentor_currency_type],
+    [mentor_city],
+    [mentor_institute],
+    [mentor_area_expertise],
+    [mentor_passion_dtls],
+    [mentor_domain],
+    [mentor_linkedin_checked_status]
+) OUTPUT INSERTED.mentor_dtls_id VALUES (
+    @mentor_user_dtls_id,
+    @mentor_phone_number,
+    @mentor_email,
+    @mentor_profile_photo,
+    @mentor_social_media_profile,
+    @mentor_job_title,
+    @mentor_company_name,
+    @mentor_years_of_experience,
+    @mentor_academic_qualification,
+    @mentor_recommended_area_of_mentorship,
+    @mentor_guest_lectures_interest,
+    @mentor_curating_case_studies_interest,
+    @mentor_sessions_free_of_charge,
+    @mentor_language,
+    @mentor_timezone,
+    @mentor_country,
+    @mentor_headline,
+    @mentor_session_price,
+    @mentor_currency,
+    @City,
+    @Institute,
+    @areaOfExpertise,
+    @passionAbout,
+    @mentorDomain,
+    @mentor_linkedin_checked_status
+);
+`;
+export const MentorRegistrationStep2SqlQuery2 = `UPDATE [dbo].[mentor_dtls]
+SET
+    [mentor_job_title] = @jobtitle,
+    [mentor_years_of_experience] = @experience,
+    [mentor_company_name] = @companyName,
+    [mentor_domain] = @MentorDomain,
+    [mentor_area_expertise] = @AreaOfexpertise,
+    [mentor_passion_dtls] = @passionateAbout,
+    [mentor_headline] = @headline,
+    [mentor_recommended_area_of_mentorship] = @areaofmentorship,
+    [mentor_timezone] = @Timezone,
+    [mentor_currency_type] = @currency,
+    [mentor_session_price] = @sessionprice,
+    [mentor_guest_lectures_interest] = @guestlecturesinterest,
+    [mentor_curating_case_studies_interest] = @casestudiesinterest,
+    [mentor_sessions_free_of_charge] = @sessionsfreecharge,
+    [mentor_institute] = @Institute,
+    [mentor_country] = @country,
+    [mentor_city] = @City
+WHERE
+    [mentor_dtls_id] = @mentor_dtls_id;
+`;

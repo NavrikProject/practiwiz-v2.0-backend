@@ -15,6 +15,7 @@ export const AccountCreatedHeading = "Account created";
 export const MentorDisApprovedHeading = `Not Approved as a Mentor`;
 export const CaseStudySubmittedHeading = "Case study submitted";
 export const MentorApplicationProgressHeading = `Fill the mentor application`;
+export const InternshipHeading = `Internship post created`;
 // notification messages
 export const MentorDisApprovedMsg = `There are some reasons while approving for the mentor`;
 export const PasswordChangedMessage = `Successfully you have updated the password for the account`;
@@ -32,3 +33,4 @@ export const CaseStudyPurchasedMessage =
   "You have successfully purchased the case study";
 export const MentorEmailAlertMessage =
   "Please fill the mentor application, To approve as a mentor.";
+export const InternshipPostMessage = "Successfully you have created the internship post "

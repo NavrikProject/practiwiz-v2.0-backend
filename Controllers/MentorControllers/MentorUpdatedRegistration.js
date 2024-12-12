@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import sql from "mssql";
 import config from "../../Config/dbConfig.js";
 import dotenv from "dotenv";
+
 import {
   sendEmail,
   uploadMentorPhotoToAzure,
@@ -18,6 +19,8 @@ import {
   mentorDtlsUpdatedRegistrationQuery,
   MentorOnboardingFeedbackSqlQuery,
   MentorRegistrationStep2SqlQuery,
+  MentorRegistrationStep2SqlQuery2,
+  mentorDtlsUpdatedRegistrationQuery2,
 } from "../../SQLQueries/MentorDashboard/MentorUpdateRegSqlQueries.js";
 import {
   mentorAccountCreatedEmailTemplate,
@@ -25,6 +28,7 @@ import {
 } from "../../EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
 import moment from "moment";
 import { mentorApplicationEmail } from "../../EmailTemplates/MentorEmailTemplate/MentorEmailTemplate.js";
+// import { json } from "body-parser";
 dotenv.config();
 
 // registering of the mentor application
@@ -285,77 +289,62 @@ export async function MentorUpdatedRegistration(req, res, next) {
 
 export async function MentorUpdateAdditionalDetails(req, res, next) {
   const {
-    mentorDomain,
     jobtitle,
     experience,
     companyName,
-    passionateAbout,
-    AreaOfexpertise,
-    areaofmentorship,
+    mentorDomain,
+    Skills,
     headline,
+    areaofmentorship,
+    Currency,
+    Pricing,
+    guestLectures,
+    CaseStudies,
+    sessionsFreeOfCharge,
+    InstituteName,
+    CountryName,
+    CityName,
     Timezone,
-    Mon,
-    Tue,
-    Wed,
-    Thu,
-    Fri,
-    Sat,
-    Sun,
+    Availability,
     userDtlsId,
     mentorDtlsId,
     mentorEmail,
     mentorName,
   } = req.body;
   const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
+
   try {
     sql.connect(config, (err, db) => {
       if (err) return res.json({ error: "There is some error while applying" });
       const request = new sql.Request();
-      request.input("Mentor_Domain", sql.VarChar, mentorDomain);
       request.input("jobtitle", sql.VarChar, jobtitle);
       request.input("experience", sql.VarChar, experience);
       request.input("companyName", sql.VarChar, companyName);
-      request.input("passionateAbout", sql.VarChar, passionateAbout);
-      request.input("AreaOfexpertise", sql.VarChar, AreaOfexpertise);
-      request.input("areaofmentorship", sql.VarChar, areaofmentorship || "");
+      request.input("MentorDomain", sql.VarChar, mentorDomain);
+      request.input("AreaOfexpertise", sql.VarChar, Skills);
+      request.input("passionateAbout", sql.VarChar, " ");
       request.input("headline", sql.VarChar, headline);
+      request.input("areaofmentorship", sql.VarChar, areaofmentorship || "");
       request.input("Timezone", sql.VarChar, Timezone);
+      request.input("currency", sql.VarChar, Currency);
+      request.input("sessionprice", sql.Int, Pricing);
+      request.input("guestlecturesinterest", sql.VarChar, guestLectures);
+      request.input("casestudiesinterest", sql.VarChar, CaseStudies);
+      request.input("sessionsfreecharge", sql.VarChar, sessionsFreeOfCharge);
+      request.input("Institute", sql.VarChar, InstituteName);
+      request.input("country", sql.VarChar, CountryName);
+      request.input("City", sql.VarChar, CityName);
+      // request.input("City", sql.VarChar, Availability);
       request.input("mentor_dtls_id", sql.Int, mentorDtlsId);
-      request.query(MentorRegistrationStep2SqlQuery, async (err, result) => {
+      request.query(MentorRegistrationStep2SqlQuery2, async (err, result) => {
         if (err)
           return res.json({
             error: err.message,
           });
         if (result) {
           // adding area of expertise word in to table
-          if (Mon !== "undefined") {
-            const monDayParsedArray = JSON.parse(Mon);
-            arrayFunctions(monDayParsedArray, mentorDtlsId, "Mon", timestamp);
-          }
-          if (Tue !== "undefined") {
-            const tueDayParsedArray = JSON.parse(Tue);
-            arrayFunctions(tueDayParsedArray, mentorDtlsId, "Tue", timestamp);
-          }
-          if (Wed !== "undefined") {
-            const wedDayParsedArray = JSON.parse(Wed);
-            arrayFunctions(wedDayParsedArray, mentorDtlsId, "Wed", timestamp);
-          }
-          if (Thu !== "undefined") {
-            const thuDayParsedArray = JSON.parse(Thu);
-            arrayFunctions(thuDayParsedArray, mentorDtlsId, "Wed", timestamp);
-          }
-          if (Fri !== "undefined") {
-            const friDayParsedArray = JSON.parse(Fri);
-            arrayFunctions(friDayParsedArray, mentorDtlsId, "Fri", timestamp);
-          }
-          if (Sat !== "undefined") {
-            const satDayParsedArray = JSON.parse(Sat);
-            arrayFunctions(satDayParsedArray, mentorDtlsId, "Sat", timestamp);
-          }
-          if (Sun !== "undefined") {
-            const sunDayParsedArray = JSON.parse(Sun);
-            arrayFunctions(sunDayParsedArray, mentorDtlsId, "Sun", timestamp);
-          }
+          const availabilityData = JSON.parse(Availability);
+          updateMentorTimestamp(availabilityData, mentorDtlsId);
           const mentorNotificationHandler = InsertNotificationHandler(
             userDtlsId,
             SuccessMsg,
@@ -381,8 +370,11 @@ export async function MentorUpdateAdditionalDetails(req, res, next) {
         }
       });
     });
-  } catch (error) {}
+  } catch (error) {
+    if (error) return res.json({ error: "There is some error while applying" });
+  }
 }
+
 function arrayFunctions(array, mentorDtlsId, day, timestamp) {
   try {
     sql.connect(config, (err, conn) => {
@@ -444,6 +436,57 @@ function arrayFunctions(array, mentorDtlsId, day, timestamp) {
   }
 }
 
+function updateMentorTimestamp(availabilityData, mentorDtlsId) {
+  sql.connect(config, (err, conn) => {
+    if (err) return res.json({ error: err.message });
+    if (conn) {
+      const request = new sql.Request();
+      availabilityData.forEach((item) => {
+        item.days.forEach((day) => {
+          console.log(`Day: ${day}`);
+          let FromTime = `${item.startHour}:${item.startMinute.substring(
+            0,
+            2
+          )}${item.startPeriod}`;
+          let ToTime = `${item.endHour}:${item.endMinute.substring(0, 2)}${
+            item.endPeriod
+          }`;
+          let mentorRecStartDate = `${item.fromDate}`;
+          let mentorRecEndDate = `${item.toDate}`;
+          let mentorTimeSlotDuration = `${item.duration}`;
+          let mentorRecType = "Daily";
+          request.query(
+            "INSERT INTO mentor_timeslots_dtls (mentor_dtls_id,mentor_timeslot_day,mentor_timeslot_from,mentor_timeslot_to,mentor_timeslot_rec_indicator,mentor_timeslot_rec_end_timeframe,mentor_timeslot_duration,mentor_timeslot_rec_start_timeframe) VALUES('" +
+              mentorDtlsId +
+              "','" +
+              day +
+              "','" +
+              FromTime +
+              "','" +
+              ToTime +
+              "','" +
+              mentorRecType +
+              "','" +
+              mentorRecEndDate +
+              "','" +
+              mentorTimeSlotDuration +
+              "','" +
+              mentorRecStartDate +
+              "')",
+            (err, success) => {
+              if (err) {
+                console.log(err.message);
+              }
+              if (success) {
+                console.log("Data inserted successfully");
+              }
+            }
+          );
+        });
+      });
+    }
+  });
+}
 export async function MentorOnboardingFeedbackController(req, res, next) {
   const { feedback, rating, userDtlsId, username } = req.body;
   try {
@@ -479,3 +522,104 @@ export async function MentorOnboardingFeedbackController(req, res, next) {
     return res.json({ error: err.message });
   }
 }
+
+// export async function MentorUpdateAdditionalDetails(req, res, next) {
+//   const {
+//     mentorDomain,
+//     jobtitle,
+//     experience,
+//     companyName,
+//     passionateAbout,
+//     AreaOfexpertise,
+//     areaofmentorship,
+//     headline,
+//     Timezone,
+//     Mon,
+//     Tue,
+//     Wed,
+//     Thu,
+//     Fri,
+//     Sat,
+//     Sun,
+//     userDtlsId,
+//     mentorDtlsId,
+//     mentorEmail,
+//     mentorName,
+//   } = req.body;
+//   const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
+//   try {
+//     sql.connect(config, (err, db) => {
+//       if (err) return res.json({ error: "There is some error while applying" });
+//       const request = new sql.Request();
+//       request.input("Mentor_Domain", sql.VarChar, mentorDomain);
+//       request.input("jobtitle", sql.VarChar, jobtitle);
+//       request.input("experience", sql.VarChar, experience);
+//       request.input("companyName", sql.VarChar, companyName);
+//       request.input("passionateAbout", sql.VarChar, passionateAbout);
+//       request.input("AreaOfexpertise", sql.VarChar, AreaOfexpertise);
+//       request.input("areaofmentorship", sql.VarChar, areaofmentorship || "");
+//       request.input("headline", sql.VarChar, headline);
+//       request.input("Timezone", sql.VarChar, Timezone);
+//       request.input("mentor_dtls_id", sql.Int, mentorDtlsId);
+//       request.query(MentorRegistrationStep2SqlQuery, async (err, result) => {
+//         if (err)
+//           return res.json({
+//             error: err.message,
+//           });
+//         if (result) {
+//           // adding area of expertise word in to table
+//           if (Mon !== "undefined") {
+//             const monDayParsedArray = JSON.parse(Mon);
+//             arrayFunctions(monDayParsedArray, mentorDtlsId, "Mon", timestamp);
+//           }
+//           if (Tue !== "undefined") {
+//             const tueDayParsedArray = JSON.parse(Tue);
+//             arrayFunctions(tueDayParsedArray, mentorDtlsId, "Tue", timestamp);
+//           }
+//           if (Wed !== "undefined") {
+//             const wedDayParsedArray = JSON.parse(Wed);
+//             arrayFunctions(wedDayParsedArray, mentorDtlsId, "Wed", timestamp);
+//           }
+//           if (Thu !== "undefined") {
+//             const thuDayParsedArray = JSON.parse(Thu);
+//             arrayFunctions(thuDayParsedArray, mentorDtlsId, "Wed", timestamp);
+//           }
+//           if (Fri !== "undefined") {
+//             const friDayParsedArray = JSON.parse(Fri);
+//             arrayFunctions(friDayParsedArray, mentorDtlsId, "Fri", timestamp);
+//           }
+//           if (Sat !== "undefined") {
+//             const satDayParsedArray = JSON.parse(Sat);
+//             arrayFunctions(satDayParsedArray, mentorDtlsId, "Sat", timestamp);
+//           }
+//           if (Sun !== "undefined") {
+//             const sunDayParsedArray = JSON.parse(Sun);
+//             arrayFunctions(sunDayParsedArray, mentorDtlsId, "Sun", timestamp);
+//           }
+//           const mentorNotificationHandler = InsertNotificationHandler(
+//             userDtlsId,
+//             SuccessMsg,
+//             AccountCreatedHeading,
+//             AccountCreatedMessage
+//           );
+//           const msg = mentorApplicationEmail(mentorEmail, mentorName);
+//           const response = await sendEmail(msg);
+//           if (response === "True" || response === "true" || response === true) {
+//             return res.json({
+//               success: "Thank you for applying the mentor application",
+//             });
+//           }
+//           if (
+//             response === "False" ||
+//             response === "false" ||
+//             response === false
+//           ) {
+//             return res.json({
+//               success: "Thank you for applying the mentor application",
+//             });
+//           }
+//         }
+//       });
+//     });
+//   } catch (error) {}
+// }
