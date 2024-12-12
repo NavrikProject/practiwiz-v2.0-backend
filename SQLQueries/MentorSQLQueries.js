@@ -585,7 +585,7 @@ export const fetchSingleMentorProfileForPublicQuery = `SELECT
             t.[mentor_timeslot_to],
             t.[mentor_timeslot_rec_indicator],
             t.[mentor_timeslot_rec_end_timeframe],
-            t.[mentor_timeslot_rec_cr_date],
+            t.[mentor_timeslot_rec_start_timeframe],
             t.[mentor_timeslot_booking_status],
             t.[mentor_timeslot_duration],
             t.[mentor_timeslot_status]

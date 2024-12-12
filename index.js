@@ -30,6 +30,8 @@ import caseStudiesRoute from "./Routes/CaseStudies/CaseStudyRoutes.js";
 import instituteDashboardRoute from "./Routes/InstituteRoutes/InstituteDashboardRoute.js";
 import config from "./Config/dbConfig.js";
 import mentorDashboardCaseStudyRouter from "./Routes/MentorRoutes/MentorCaseStudyRoute.js";
+import employerRoute from "./Routes/EmployerRoutes/EmployerRoutes.js";
+import internshipRoute from "./Routes/EmployerRoutes/InternshipRoutes.js";
 import { InsertNotificationHandler } from "./Middleware/NotificationFunction.js";
 import { accountCreatedEmailTemplate } from "./EmailTemplates/AccountEmailTemplate/AccountEmailTemplate.js";
 import { sendEmail } from "./Middleware/AllFunctions.js";
@@ -143,6 +145,10 @@ app.use("/api/v1/admin/dashboard/case-studies", adminCaseStudiesDashboardRoute);
 // case studies routes
 app.use("/api/v1/case-studies", caseStudiesRoute);
 
+// employer routes
+app.use("/api/v1/employer", employerRoute);
+app.use("/api/v1/employer/internship", internshipRoute);
+
 async function connectToDatabases() {
   try {
     sql.connect(config, (err, db) => {
@@ -159,7 +165,7 @@ async function connectToDatabases() {
     console.log(error.message);
   }
 }
-connectToDatabases();
+// connectToDatabases();
 
 app.get("/test/email", async (req, res) => {
   const msg = accountCreatedEmailTemplate(
@@ -305,10 +311,10 @@ async function getAllNotApprovedMentorsListAdminDashboard(req, res, next) {
     });
   }
 }
-// setInterval(() => {
-//   connectToDatabases();
-//   getAllNotApprovedMentorsListAdminDashboard();
-// }, 86400);
+setInterval(() => {
+  connectToDatabases();
+  getAllNotApprovedMentorsListAdminDashboard();
+}, 86400);
 
 // Start the server
 app.listen(port, () => {
