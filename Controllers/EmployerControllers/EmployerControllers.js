@@ -175,6 +175,10 @@ export async function UpdateEmployerOrganizationDetails(req, res) {
     industry,
     organization_location,
     company_size,
+    organization_website,
+    organization_linkedin,
+    organization_employee_designation,
+    organization_address,
   } = req.body.data;
   const { employerUserDtlsId } = req.body;
   try {
@@ -187,6 +191,19 @@ export async function UpdateEmployerOrganizationDetails(req, res) {
       request.input("employerOrgIndustry", sql.VarChar, industry);
       request.input("employerOrgLocation", sql.VarChar, organization_location);
       request.input("employerOrgNoOfEmp", sql.VarChar, company_size);
+      request.input("organization_website", sql.VarChar, organization_website);
+      request.input(
+        "organization_linkedin",
+        sql.VarChar,
+        organization_linkedin
+      );
+      request.input(
+        "organization_employee_designation",
+        sql.VarChar,
+        organization_employee_designation
+      );
+      request.input("organization_address", sql.Text, organization_address);
+
       request.query(UpdateEMployerOrgDetailsQuery, (err, result) => {
         if (err) return res.json({ error: err.message });
         if (result) {

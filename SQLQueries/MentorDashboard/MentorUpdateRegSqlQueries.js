@@ -380,7 +380,8 @@ SET
     [mentor_sessions_free_of_charge] = @sessionsfreecharge,
     [mentor_institute] = @Institute,
     [mentor_country] = @country,
-    [mentor_city] = @City
+    [mentor_city] = @City,
+    [mentor_timeslots_json] = @timeslotJson
 WHERE
     [mentor_dtls_id] = @mentor_dtls_id;
 `;

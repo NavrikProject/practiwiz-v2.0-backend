@@ -180,6 +180,7 @@ SELECT
     m.[mentor_area_expertise],
     m.[mentor_passion_dtls],
     m.[mentor_domain],
+    m.[mentor_timeslots_json],
     'Yes' AS mentor_dtls_found,
     (
         CASE 

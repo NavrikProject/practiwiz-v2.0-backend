@@ -321,7 +321,7 @@ export async function MentorUpdateAdditionalDetails(req, res, next) {
       request.input("experience", sql.VarChar, experience);
       request.input("companyName", sql.VarChar, companyName);
       request.input("MentorDomain", sql.VarChar, mentorDomain);
-      request.input("AreaOfexpertise", sql.VarChar, Skills);
+      request.input("AreaOfexpertise", sql.VarChar, Skills || "[]");
       request.input("passionateAbout", sql.VarChar, " ");
       request.input("headline", sql.VarChar, headline);
       request.input("areaofmentorship", sql.VarChar, areaofmentorship || "");
@@ -331,10 +331,10 @@ export async function MentorUpdateAdditionalDetails(req, res, next) {
       request.input("guestlecturesinterest", sql.VarChar, guestLectures);
       request.input("casestudiesinterest", sql.VarChar, CaseStudies);
       request.input("sessionsfreecharge", sql.VarChar, sessionsFreeOfCharge);
-      request.input("Institute", sql.VarChar, InstituteName);
-      request.input("country", sql.VarChar, CountryName);
-      request.input("City", sql.VarChar, CityName);
-      // request.input("City", sql.VarChar, Availability);
+      request.input("Institute", sql.VarChar, InstituteName || "");
+      request.input("country", sql.VarChar, CountryName || "");
+      request.input("City", sql.VarChar, CityName || "");
+      request.input("timeslotJson", sql.Text, Availability);
       request.input("mentor_dtls_id", sql.Int, mentorDtlsId);
       request.query(MentorRegistrationStep2SqlQuery2, async (err, result) => {
         if (err)

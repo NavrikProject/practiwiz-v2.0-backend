@@ -18,6 +18,7 @@ export const MentorApprovedBookingQuery = ` SELECT
     mba.mentee_user_dtls_id,
     mba.mentor_session_booking_date,
     mba.mentor_booking_time,
+    mba.mentor_booking_starts_time,
     mba.mentor_options,
     mba.mentor_questions,
     mba.mentor_booking_confirmed,

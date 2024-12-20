@@ -16,7 +16,10 @@ import {
   SuccessMsg,
 } from "../../Messages/Messages.js";
 import moment from "moment";
-import { CreateInternshipPostSqlQuery } from "../../SQLQueries/EmployerSQlQueries/InternshipSqlQueries.js";
+import {
+  CreateInternshipPostSqlQuery,
+  FetchAllInternshipPostsSqlQuery,
+} from "../../SQLQueries/EmployerSQlQueries/InternshipSqlQueries.js";
 import { FetchInternshipPostDetailsSqlQuery } from "../../SQLQueries/EmployerSQlQueries/EmployerSqlQueries.js";
 
 dotenv.config();
@@ -45,13 +48,18 @@ export async function CreateInternshipPost(req, res, next) {
     employer_internship_post_support,
     employer_internship_post_project,
     employer_internship_post_contribution,
+    taskCategory,
+    businessObjective,
+    projectPlan,
   } = req.body.payload;
   const {
     employerUserDtlsId,
     internshipSkills,
     internshipPerks,
+    internshipDomain,
     employerOrgDtlsId,
   } = req.body;
+  console.log(req.body.payload);
   try {
     sql.connect(config, (err, db) => {
       if (err) return res.json({ error: err.message });
@@ -166,20 +174,21 @@ export async function CreateInternshipPost(req, res, next) {
         sql.Bit,
         internshipPPOcheckbox
       );
-      request.input(
-        "employer_internship_post_support",
-        sql.Text,
-        employer_internship_post_support
-      );
+      request.input("employer_internship_post_support", sql.Text, taskCategory);
       request.input(
         "employer_internship_post_project",
         sql.Text,
-        employer_internship_post_project
+        businessObjective
       );
       request.input(
         "employer_internship_post_contribution",
         sql.Text,
-        employer_internship_post_contribution
+        projectPlan
+      );
+      request.input(
+        "employer_internship_post_domain",
+        sql.VarChar,
+        internshipDomain
       );
       request.query(CreateInternshipPostSqlQuery, (err, result) => {
         if (err) return res.json({ error: err.message });
@@ -200,7 +209,35 @@ export async function CreateInternshipPost(req, res, next) {
     return res.json({ error: error.message });
   }
 }
+export async function fetchAllInternshipPosts(req, res, next) {
+  try {
+    sql.connect(config, (err, db) => {
+      if (err) return res.json({ error: err.message });
 
+      const request = new sql.Request();
+
+      request.query(FetchAllInternshipPostsSqlQuery, (err, result) => {
+        if (err) return res.json({ error: err.message });
+
+        if (result.recordset.length > 0) {
+          return res.json({
+            success: true,
+            status: 200,
+            data: result.recordset,
+          });
+        } else {
+          return res.json({
+            success: false,
+            message: "No internship posts found",
+            data: [],
+          });
+        }
+      });
+    });
+  } catch (error) {
+    return res.json({ error: error.message });
+  }
+}
 export async function fetchSingleInternshipPost(req, res, next) {
   const { internshipPostId } = req.body;
   try {
