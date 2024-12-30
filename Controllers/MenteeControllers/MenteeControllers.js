@@ -81,7 +81,11 @@ export async function MenteeRegistration(req, res, next) {
               const userDtlsId = result.recordset[0].user_dtls_id;
               request.input("menteeUserDtlsId", sql.Int, userDtlsId);
               request.input("menteeAbout", sql.VarChar, mentee_About);
-              request.input("menteeSkills", sql.VarChar, mentee_Skills);
+              request.input(
+                "menteeSkills",
+                sql.Text,
+                JSON.stringify(mentee_Skills) || "[]"
+              );
               request.input("menteeGender", sql.VarChar, mentee_gender);
               request.input("menteeType", sql.VarChar, mentee_type);
               request.input(

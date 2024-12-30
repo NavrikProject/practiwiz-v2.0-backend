@@ -28,23 +28,9 @@ export async function MentorUpdateMentorProfile1(req, res) {
     mentor_city,
     mentor_institute,
     mentor_academic_qualification,
-    Mentor_Domain,
-    jobtitle,
-    experience,
-    companyName,
-    passionateAbout,
-    AreaOfexpertise,
-    areaofmentorship,
-    headline,
-    mentor_sessions_free_of_charge,
-    mentor_guest_lectures_interest,
-    mentor_curating_case_studies_interest,
-    mentor_timezone,
-    mentor_language,
-    mentor_currency_type,
-    mentor_session_price,
   } = req.body.formData;
-  const { mentorUserDtlsId, mentor_email, mentorPhoneNumber } = req.body;
+  console.log(req.body.formData);
+  const { mentorUserDtlsId } = req.body;
   try {
     sql.connect(config, (err) => {
       if (err)
@@ -88,104 +74,6 @@ export async function MentorUpdateMentorProfile1(req, res) {
                 }
               }
             );
-          } else {
-            request.input("mentor_user_dtls_id", sql.Int, mentorUserDtlsId);
-            request.input(
-              "mentor_phone_number",
-              sql.VarChar,
-              mentorPhoneNumber
-            );
-            request.input("mentor_email", sql.VarChar, mentor_email);
-            request.input(
-              "mentor_profile_photo",
-              sql.VarChar,
-              "https://practiwizstorage.blob.core.windows.net/practiwizcontainer/blue-circle-with-white-user_78370-4707.webp"
-            );
-            request.input(
-              "mentor_social_media_profile",
-              sql.VarChar,
-              social_media_profile || ""
-            );
-            request.input("mentor_job_title", sql.VarChar, jobtitle || "");
-            request.input(
-              "mentor_company_name",
-              sql.VarChar,
-              companyName || ""
-            );
-            request.input(
-              "mentor_years_of_experience",
-              sql.Int,
-              experience || ""
-            );
-            request.input(
-              "mentor_academic_qualification",
-              sql.VarChar,
-              mentor_academic_qualification || ""
-            );
-            request.input(
-              "mentor_recommended_area_of_mentorship",
-              sql.VarChar,
-              areaofmentorship || ""
-            );
-            request.input(
-              "mentor_guest_lectures_interest",
-              sql.VarChar,
-              mentor_guest_lectures_interest || ""
-            );
-            request.input(
-              "mentor_curating_case_studies_interest",
-              sql.VarChar,
-              mentor_curating_case_studies_interest || ""
-            );
-            request.input(
-              "mentor_sessions_free_of_charge",
-              sql.VarChar,
-              mentor_sessions_free_of_charge || ""
-            );
-            request.input(
-              "mentor_language",
-              sql.VarChar,
-              mentor_language || ""
-            );
-            request.input(
-              "mentor_timezone",
-              sql.VarChar,
-              mentor_timezone || ""
-            );
-            request.input("mentor_country", sql.VarChar, mentor_country || "");
-            request.input("mentor_headline", sql.VarChar, headline || "");
-            request.input(
-              "mentor_session_price",
-              sql.VarChar,
-              mentor_session_price || ""
-            );
-            request.input(
-              "mentor_currency",
-              sql.VarChar,
-              mentor_currency_type || ""
-            );
-            request.input("City", sql.VarChar, mentor_city || "");
-            request.input("Institute", sql.VarChar, mentor_institute || "");
-            request.input("areaOfExpertise", sql.Text, AreaOfexpertise || "[]");
-            request.input("passionAbout", sql.Text, passionateAbout || "[]");
-            request.input("mentorDomain", sql.VarChar, Mentor_Domain || "");
-            request.query(
-              mentorProfilePicDashboardUpdateQuery,
-              async (err, result) => {
-                if (err) return res.json({ error: err.message });
-                if (result) {
-                  const notification = await InsertNotificationHandler(
-                    mentorUserDtlsId,
-                    SuccessMsg,
-                    MentorProfileHeading,
-                    MentorProfileChangedMessage
-                  );
-                  return res.json({
-                    success: "Successfully updated the profile",
-                  });
-                }
-              }
-            );
           }
         }
       );
@@ -199,32 +87,14 @@ export async function MentorUpdateMentorProfile1(req, res) {
 //wip
 export async function MentorUpdateMentorProfile2(req, res) {
   const {
-    social_media_profile,
-    mentor_country,
-    mentor_city,
-    mentor_institute,
-    mentor_academic_qualification,
-    mentor_recommended_area_of_mentorship,
+    mentor_job_title,
     mentor_years_of_experience,
     mentor_company_name,
+    mentor_recommended_area_of_mentorship,
     mentor_headline,
-    mentor_job_title,
-    mentor_sessions_free_of_charge,
-    mentor_guest_lectures_interest,
-    mentor_curating_case_studies_interest,
-    mentor_timezone,
-    mentor_language,
-    mentor_currency_type,
-    mentor_session_price,
-    mentor_passion_dtls,
   } = req.body.formData;
-  const {
-    mentorUserDtlsId,
-    mentor_email,
-    mentorPhoneNumber,
-    expertiseList,
-    mentor_domain,
-  } = req.body;
+
+  const { mentorUserDtlsId, expertiseList, mentor_domain } = req.body;
   try {
     sql.connect(config, (err) => {
       if (err)
@@ -242,20 +112,21 @@ export async function MentorUpdateMentorProfile2(req, res) {
             request.input("mentorDomain", sql.Text, mentor_domain);
             request.input("headline", sql.VarChar, mentor_headline);
             request.input("jobTitle", sql.VarChar, mentor_job_title);
-            request.input("mentorPassion", sql.Text, mentor_passion_dtls);
-            request.input("mentorExpertise", sql.Text, expertiseList);
+
+            request.input("mentorExpertise", sql.Text, expertiseList || "");
             request.input(
               "mentorship",
               sql.VarChar,
-              mentor_recommended_area_of_mentorship
+              mentor_recommended_area_of_mentorship || " "
             );
+
             request.input(
               "experience",
               sql.VarChar,
               mentor_years_of_experience
             );
             request.query(
-              "update mentor_dtls set mentor_company_name = @companyName, mentor_domain = @mentorDomain,mentor_headline = @headline, mentor_job_title = @jobTitle, mentor_years_of_experience = @experience,  mentor_recommended_area_of_mentorship = @mentorship,mentor_area_expertise = @mentorExpertise,mentor_passion_dtls = @mentorPassion  where mentor_user_dtls_id = @mentorUserDtlsId",
+              "update mentor_dtls set mentor_company_name = @companyName, mentor_domain = @mentorDomain,mentor_headline = @headline, mentor_job_title = @jobTitle, mentor_years_of_experience = @experience,  mentor_recommended_area_of_mentorship = @mentorship,mentor_area_expertise = @mentorExpertise  where mentor_user_dtls_id = @mentorUserDtlsId",
               async (err, result) => {
                 if (err) return res.json({ error: err.message });
                 if (result) {
@@ -267,117 +138,6 @@ export async function MentorUpdateMentorProfile2(req, res) {
                   );
                   return res.json({
                     success: "Successfully updated the time slots",
-                  });
-                  s;
-                }
-              }
-            );
-          } else {
-            request.input("mentor_user_dtls_id", sql.Int, mentorUserDtlsId);
-            request.input(
-              "mentor_phone_number",
-              sql.VarChar,
-              mentorPhoneNumber
-            );
-            request.input("mentor_email", sql.VarChar, mentor_email);
-            request.input(
-              "mentor_profile_photo",
-              sql.VarChar,
-              "https://practiwizstorage.blob.core.windows.net/practiwizcontainer/blue-circle-with-white-user_78370-4707.webp"
-            );
-            request.input(
-              "mentor_social_media_profile",
-              sql.VarChar,
-              social_media_profile || ""
-            );
-            request.input(
-              "mentor_job_title",
-              sql.VarChar,
-              mentor_job_title || ""
-            );
-            request.input(
-              "mentor_company_name",
-              sql.VarChar,
-              mentor_company_name || ""
-            );
-            request.input(
-              "mentor_years_of_experience",
-              sql.Int,
-              mentor_years_of_experience || ""
-            );
-            request.input(
-              "mentor_academic_qualification",
-              sql.VarChar,
-              mentor_academic_qualification || ""
-            );
-            request.input(
-              "mentor_recommended_area_of_mentorship",
-              sql.VarChar,
-              mentor_recommended_area_of_mentorship || ""
-            );
-            request.input(
-              "mentor_guest_lectures_interest",
-              sql.VarChar,
-              mentor_guest_lectures_interest || ""
-            );
-            request.input(
-              "mentor_curating_case_studies_interest",
-              sql.VarChar,
-              mentor_curating_case_studies_interest || ""
-            );
-            request.input(
-              "mentor_sessions_free_of_charge",
-              sql.VarChar,
-              mentor_sessions_free_of_charge || ""
-            );
-            request.input(
-              "mentor_language",
-              sql.VarChar,
-              mentor_language || ""
-            );
-            request.input(
-              "mentor_timezone",
-              sql.VarChar,
-              mentor_timezone || ""
-            );
-            request.input("mentor_country", sql.VarChar, mentor_country || "");
-            request.input(
-              "mentor_headline",
-              sql.VarChar,
-              mentor_headline || ""
-            );
-            request.input(
-              "mentor_session_price",
-              sql.VarChar,
-              mentor_session_price || ""
-            );
-            request.input(
-              "mentor_currency",
-              sql.VarChar,
-              mentor_currency_type || ""
-            );
-            request.input("City", sql.VarChar, mentor_city || "");
-            request.input("Institute", sql.VarChar, mentor_institute || "");
-            request.input("areaOfExpertise", sql.Text, expertiseList || "[]");
-            request.input(
-              "passionAbout",
-              sql.Text,
-              mentor_passion_dtls || "[]"
-            );
-            request.input("mentorDomain", sql.VarChar, mentor_domain || "");
-            request.query(
-              mentorProfilePicDashboardUpdateQuery,
-              async (err, result) => {
-                if (err) return res.json({ error: err.message });
-                if (result) {
-                  const notification = await InsertNotificationHandler(
-                    mentorUserDtlsId,
-                    SuccessMsg,
-                    MentorProfileHeading,
-                    MentorProfileChangedMessage
-                  );
-                  return res.json({
-                    success: "Successfully updated the profile",
                   });
                 }
               }
@@ -395,10 +155,9 @@ export async function MentorUpdateMentorProfile2(req, res) {
 
 // updates are done
 export async function MentorUpdateMentorProfile3(req, res) {
-  const { Mon, Tue, Wed, Thu, Fri, Sat, Sun } = req.body;
-  const { userDtlsId } = req.body;
-  const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
+  const { dataGroup, userDtlsId } = req.body;
 
+  const timestamp = moment(Date.now()).format("YYYY-MM-DD HH:mm:ss");
   try {
     sql.connect(config, (err) => {
       if (err)
@@ -417,78 +176,27 @@ export async function MentorUpdateMentorProfile3(req, res) {
             request.query(
               "update mentor_timeslots_dtls set mentor_timeslot_status = 'archieve' where mentor_dtls_id = @timeslotMentorDtlsId",
               async (err, result) => {
-                if (typeof Mon !== "undefined" && Mon !== null) {
-                  const monDayParsedArray = JSON.parse(Mon);
-                  UpdateMentorTimeSlots(
-                    monDayParsedArray,
-                    mentorDtlsId,
-                    "Mon",
-                    timestamp
-                  );
-                }
-                if (typeof Tue !== "undefined" && Tue !== null) {
-                  const tueDayParsedArray = JSON.parse(Tue);
-                  UpdateMentorTimeSlots(
-                    tueDayParsedArray,
-                    mentorDtlsId,
-                    "Tue",
-                    timestamp
-                  );
-                }
-                if (typeof Wed !== "undefined" && Wed !== null) {
-                  const wedDayParsedArray = JSON.parse(Wed);
-                  UpdateMentorTimeSlots(
-                    wedDayParsedArray,
-                    mentorDtlsId,
-                    "Wed",
-                    timestamp
-                  );
-                }
-                if (typeof Thu !== "undefined" && Thu !== null) {
-                  const thuDayParsedArray = JSON.parse(Thu);
-                  UpdateMentorTimeSlots(
-                    thuDayParsedArray,
-                    mentorDtlsId,
-                    "Wed",
-                    timestamp
-                  );
-                }
-                if (typeof Fri !== "undefined" && Fri !== null) {
-                  const friDayParsedArray = JSON.parse(Fri);
-                  UpdateMentorTimeSlots(
-                    friDayParsedArray,
-                    mentorDtlsId,
-                    "Fri",
-                    timestamp
-                  );
-                }
-                if (typeof Sat !== "undefined" && Sat !== null) {
-                  const satDayParsedArray = JSON.parse(Sat);
-                  UpdateMentorTimeSlots(
-                    satDayParsedArray,
-                    mentorDtlsId,
-                    "Sat",
-                    timestamp
-                  );
-                }
-                if (typeof Sun !== "undefined" && Sun !== null) {
-                  const sunDayParsedArray = JSON.parse(Sun);
-                  UpdateMentorTimeSlots(
-                    sunDayParsedArray,
-                    mentorDtlsId,
-                    "Sun",
-                    timestamp
-                  );
-                }
-                const notificationHandler = await InsertNotificationHandler(
-                  userDtlsId,
-                  InfoMsg,
-                  MentorProfileHeading,
-                  MentorProfileChangedMessage
+                const availabilityData = JSON.parse(dataGroup);
+                updateMentorTimestamp(availabilityData, mentorDtlsId);
+                request.input("mentorDtlsId2", sql.Int, mentorDtlsId);
+                request.input("timeslotsJson", sql.Text, dataGroup);
+                request.query(
+                  "update mentor_dtls set mentor_timeslots_json = @timeslotsJson where mentor_dtls_id = @mentorDtlsId2",
+                  async (err, result) => {
+                    if (result) {
+                      const notificationHandler =
+                        await InsertNotificationHandler(
+                          userDtlsId,
+                          InfoMsg,
+                          MentorProfileHeading,
+                          MentorProfileChangedMessage
+                        );
+                      return res.json({
+                        success: "Successfully updated the time slots",
+                      });
+                    }
+                  }
                 );
-                return res.json({
-                  success: "Successfully updated the time slots",
-                });
               }
             );
           } else {
@@ -507,120 +215,112 @@ export async function MentorUpdateMentorProfile3(req, res) {
   }
 }
 
-async function UpdateMentorTimeSlots(array, mentorDtlsId, day, timestamp) {
-  try {
-    // Establish connection
-    await sql.connect(config);
+function updateMentorTimestamp(availabilityData, mentorDtlsId) {
+  sql.connect(config, (err, conn) => {
+    if (err) return res.json({ error: err.message });
+    if (conn) {
+      availabilityData.forEach((item) => {
+        item.days.forEach(async (day) => {
+          console.log(`Day: ${day}`);
+          let FromTime = `${item.startHour}:${item.startMinute.substring(
+            0,
+            2
+          )}${item.startPeriod}`;
+          let ToTime = `${item.endHour}:${item.endMinute.substring(0, 2)}${
+            item.endPeriod
+          }`;
+          let mentorRecStartDate = `${item.fromDate}`;
+          let mentorRecEndDate = `${item.toDate}`;
+          let mentorTimeSlotDuration = `${item.duration}`;
+          let mentorRecType = "Daily";
+          console.log(mentorTimeSlotDuration);
+          try {
+            // Create a new SQL request for checking
+            const checkRequest = new sql.Request();
+            const checkQuery = `
+              SELECT COUNT(*) AS count 
+              FROM mentor_timeslots_dtls 
+              WHERE mentor_dtls_id = @mentorDtlsId 
+                AND mentor_timeslot_day = @day 
+                AND mentor_timeslot_from = @FromTime 
+                AND mentor_timeslot_to = @ToTime`;
 
-    for (const item of array) {
-      // Extract properties with fallbacks
-      const {
-        from: { hours: FromHour, minutes: FromMinute, ampm: FromMeridian },
-        to: { hours: ToHour, minutes: ToMinute, ampm: ToMeridian },
-        recurring: { mentor_timeslot_rec_indicator: mentorRecType = "Daily" },
-        date: { Mentor_timeslot_rec_end_date: mentorRecEndDate },
-        slotDuration: { slotDuration },
-      } = item;
+            const checkResult = await checkRequest
+              .input("mentorDtlsId", sql.Int, mentorDtlsId)
+              .input("day", sql.VarChar, day)
+              .input("FromTime", sql.VarChar, FromTime)
+              .input("ToTime", sql.VarChar, ToTime)
+              .query(checkQuery);
 
-      // Format times
-      const FromTime = `${FromHour}:${FromMinute}${FromMeridian}`;
-      const ToTime = `${ToHour}:${ToMinute}${ToMeridian}`;
+            if (checkResult.recordset[0].count > 0) {
+              console.log("Record already exists.");
+              const updateRequest = new sql.Request();
+              const updateQuery = `
+            UPDATE mentor_timeslots_dtls
+            SET mentor_timeslot_status = 'unarchieve'
+            WHERE mentor_dtls_id = @mentorDtlsId AND mentor_timeslot_day = @day
+            AND mentor_timeslot_from = @FromTime AND mentor_timeslot_to = @ToTime
+            AND mentor_timeslot_rec_indicator = @recurrenceType`;
 
-      // Handle empty recurring type
-      const recurrenceType = !mentorRecType ? "Daily" : mentorRecType;
+              const updateResult = await updateRequest
+                .input("mentorDtlsId", sql.Int, mentorDtlsId)
+                .input("day", sql.VarChar, day)
+                .input("FromTime", sql.VarChar, FromTime)
+                .input("ToTime", sql.VarChar, ToTime)
+                .input("recurrenceType", sql.VarChar, mentorRecType)
+                .query(updateQuery);
+              if (updateResult.rowsAffected[0] > 0) {
+                console.log("Timeslot unarchived successfully.");
+              } else {
+                console.log("No matching record found to unarchive.");
+              }
+            } else {
+              // Create a new SQL request for inserting
+              const insertRequest = new sql.Request();
+              const insertQuery = `
+                INSERT INTO mentor_timeslots_dtls 
+                (mentor_dtls_id, mentor_timeslot_day, mentor_timeslot_from, mentor_timeslot_to, 
+                mentor_timeslot_rec_indicator, mentor_timeslot_rec_end_timeframe, mentor_timeslot_duration, mentor_timeslot_rec_start_timeframe) 
+                VALUES (@mentorDtlsId, @day, @FromTime, @ToTime, @mentorRecType, @mentorRecEndDate, @mentorTimeSlotDuration, @mentorRecStartDate)`;
 
-      // Create a new SQL request for checking existing records
-      const checkRequest = new sql.Request();
+              await insertRequest
+                .input("mentorDtlsId", sql.Int, mentorDtlsId)
+                .input("day", sql.VarChar, day)
+                .input("FromTime", sql.VarChar, FromTime)
+                .input("ToTime", sql.VarChar, ToTime)
+                .input("mentorRecType", sql.VarChar, mentorRecType)
+                .input("mentorRecEndDate", sql.VarChar, mentorRecEndDate)
+                .input(
+                  "mentorTimeSlotDuration",
+                  sql.Int,
+                  mentorTimeSlotDuration
+                )
+                .input("mentorRecStartDate", sql.VarChar, mentorRecStartDate)
+                .query(insertQuery);
 
-      // Check if the record already exists
-      const checkQuery = `
-        SELECT COUNT(*) AS count 
-        FROM mentor_timeslots_dtls 
-        WHERE mentor_dtls_id = @mentorDtlsId 
-          AND mentor_timeslot_day = @day 
-          AND mentor_timeslot_from = @FromTime 
-          AND mentor_timeslot_rec_indicator = @recurrenceType`;
-
-      const checkResult = await checkRequest
-        .input("mentorDtlsId", sql.Int, mentorDtlsId)
-        .input("day", sql.VarChar, day)
-        .input("FromTime", sql.VarChar, FromTime)
-        .input("recurrenceType", sql.VarChar, recurrenceType)
-        .query(checkQuery);
-
-      if (checkResult.recordset[0].count > 0) {
-        console.log(checkResult);
-        // Create a new SQL request for updating the existing record
-        const updateRequest = new sql.Request();
-        const updateQuery = `
-          UPDATE mentor_timeslots_dtls 
-          SET mentor_timeslot_status = 'unarchieve' 
-          WHERE mentor_dtls_id = @mentorDtlsId AND mentor_timeslot_day = @day 
-          AND mentor_timeslot_from = @FromTime 
-          AND mentor_timeslot_rec_indicator = @recurrenceType`;
-
-        const updateResult = await updateRequest
-          .input("mentorDtlsId", sql.Int, mentorDtlsId)
-          .input("day", sql.VarChar, day)
-          .input("FromTime", sql.VarChar, FromTime)
-          .input("recurrenceType", sql.VarChar, recurrenceType)
-          .query(updateQuery);
-        if (updateResult.rowsAffected[0] > 0) {
-          console.log("Timeslot unarchived successfully.");
-        } else {
-          console.log("No matching record found to unarchive.");
-        }
-      } else {
-        // Create a new SQL request for inserting a new record
-        const insertRequest = new sql.Request();
-        const insertQuery = `
-          INSERT INTO mentor_timeslots_dtls 
-          (mentor_dtls_id, mentor_timeslot_day, mentor_timeslot_from, mentor_timeslot_to, mentor_timeslot_rec_indicator, mentor_timeslot_rec_end_timeframe, mentor_timeslot_rec_cr_date, mentor_timeslot_rec_update_date, mentor_timeslot_duration) 
-          VALUES 
-          (@mentorDtlsId, @day, @FromTime, @ToTime, @recurrenceType, @mentorRecEndDate, @timestamp, @timestamp, @slotDuration)`;
-
-        await insertRequest
-          .input("mentorDtlsId", sql.Int, mentorDtlsId)
-          .input("day", sql.VarChar, day)
-          .input("FromTime", sql.VarChar, FromTime)
-          .input("ToTime", sql.VarChar, ToTime)
-          .input("recurrenceType", sql.VarChar, recurrenceType)
-          .input("mentorRecEndDate", sql.VarChar, mentorRecEndDate)
-          .input("timestamp", sql.Date, timestamp)
-          .input("slotDuration", sql.VarChar, slotDuration)
-          .query(insertQuery);
-        console.log("Data inserted successfully:", item);
-      }
+              console.log("Data inserted successfully:", item);
+            }
+          } catch (error) {
+            console.error("Error processing query:", error.message);
+          }
+        });
+      });
     }
-  } catch (error) {
-    console.error("Error in UpdateMentorTimeSlots:", error.message);
-  }
+  });
 }
 
 export async function MentorUpdateMentorProfile4(req, res) {
   const {
-    Mentor_Domain,
-    sociallink,
-    jobtitle,
-    experience,
-    companyName,
-    passionateAbout,
-    AreaOfexpertise,
-    academicQualification,
-    areaofmentorship,
-    headline,
-    Country,
-    City,
-    Institute,
     mentor_sessions_free_of_charge,
     mentor_guest_lectures_interest,
     mentor_curating_case_studies_interest,
-    mentor_timezone,
+
     mentor_language,
     mentor_currency_type,
     mentor_session_price,
   } = req.body.formData;
-  const { mentorUserDtlsId, mentor_email, mentorPhoneNumber } = req.body;
+  console.log(req.body.formData);
+  const { mentorUserDtlsId } = req.body;
   try {
     sql.connect(config, (err, db) => {
       if (err)
@@ -643,15 +343,28 @@ export async function MentorUpdateMentorProfile4(req, res) {
               sql.VarChar,
               mentor_guest_lectures_interest
             );
-            request.input("language", sql.VarChar, mentor_language);
+            request.input(
+              "language",
+              sql.Text,
+              JSON.stringify(mentor_language)
+            );
             request.input(
               "freeOfCharge",
               sql.VarChar,
               mentor_sessions_free_of_charge
             );
-            request.input("timezone", sql.VarChar, mentor_timezone);
+            request.input(
+              "mentorCurrencyType",
+              sql.VarChar,
+              mentor_currency_type
+            );
+            request.input(
+              "mentorSessionPrice",
+              sql.VarChar,
+              mentor_session_price
+            );
             request.query(
-              "update mentor_dtls set mentor_curating_case_studies_interest = @caseStudies , mentor_guest_lectures_interest = @guestLecture, mentor_language = @language,mentor_sessions_free_of_charge = @freeOfCharge,mentor_timezone = @timezone where mentor_user_dtls_id = @mentorUserDtlsId",
+              "update mentor_dtls set mentor_curating_case_studies_interest = @caseStudies , mentor_guest_lectures_interest = @guestLecture, mentor_language = @language,mentor_sessions_free_of_charge = @freeOfCharge,mentor_currency_type = @mentorCurrencyType,mentor_session_price = @mentorSessionPrice where mentor_user_dtls_id = @mentorUserDtlsId",
               async (err, result) => {
                 if (err) return res.json({ error: err.message });
                 if (result) {
@@ -663,104 +376,6 @@ export async function MentorUpdateMentorProfile4(req, res) {
                   );
                   return res.json({
                     success: "Successfully updated the profile details",
-                  });
-                }
-              }
-            );
-          } else {
-            request.input("mentor_user_dtls_id", sql.Int, mentorUserDtlsId);
-            request.input(
-              "mentor_phone_number",
-              sql.VarChar,
-              mentorPhoneNumber
-            );
-            request.input("mentor_email", sql.VarChar, mentor_email);
-            request.input(
-              "mentor_profile_photo",
-              sql.VarChar,
-              "https://practiwizstorage.blob.core.windows.net/practiwizcontainer/blue-circle-with-white-user_78370-4707.webp"
-            );
-            request.input(
-              "mentor_social_media_profile",
-              sql.VarChar,
-              sociallink || ""
-            );
-            request.input("mentor_job_title", sql.VarChar, jobtitle || "");
-            request.input(
-              "mentor_company_name",
-              sql.VarChar,
-              companyName || ""
-            );
-            request.input(
-              "mentor_years_of_experience",
-              sql.Int,
-              experience || ""
-            );
-            request.input(
-              "mentor_academic_qualification",
-              sql.VarChar,
-              academicQualification || ""
-            );
-            request.input(
-              "mentor_recommended_area_of_mentorship",
-              sql.VarChar,
-              areaofmentorship || ""
-            );
-            request.input(
-              "mentor_guest_lectures_interest",
-              sql.VarChar,
-              mentor_guest_lectures_interest || ""
-            );
-            request.input(
-              "mentor_curating_case_studies_interest",
-              sql.VarChar,
-              mentor_curating_case_studies_interest || ""
-            );
-            request.input(
-              "mentor_sessions_free_of_charge",
-              sql.VarChar,
-              mentor_sessions_free_of_charge || ""
-            );
-            request.input(
-              "mentor_language",
-              sql.VarChar,
-              mentor_language || ""
-            );
-            request.input(
-              "mentor_timezone",
-              sql.VarChar,
-              mentor_timezone || ""
-            );
-            request.input("mentor_country", sql.VarChar, Country || "");
-            request.input("mentor_headline", sql.VarChar, headline || "");
-            request.input(
-              "mentor_session_price",
-              sql.VarChar,
-              mentor_session_price || "1000"
-            );
-            request.input(
-              "mentor_currency",
-              sql.VarChar,
-              mentor_currency_type || "INR"
-            );
-            request.input("City", sql.VarChar, City || "");
-            request.input("Institute", sql.VarChar, Institute || "");
-            request.input("areaOfExpertise", sql.Text, AreaOfexpertise || "[]");
-            request.input("passionAbout", sql.Text, passionateAbout || "[]");
-            request.input("mentorDomain", sql.VarChar, Mentor_Domain || "");
-            request.query(
-              mentorProfilePicDashboardUpdateQuery,
-              async (err, result) => {
-                if (err) return res.json({ error: err.message });
-                if (result) {
-                  const notification = await InsertNotificationHandler(
-                    mentorUserDtlsId,
-                    SuccessMsg,
-                    MentorProfileHeading,
-                    MentorProfileChangedMessage
-                  );
-                  return res.json({
-                    success: "Successfully updated the profile",
                   });
                 }
               }

@@ -23,6 +23,7 @@ export const fetchMenteeSingleDashboardQuery = `SELECT
     m.[mentee_twitter_url],
     m.[mentee_instagram_url],
     m.[mentee_dtls_update_date],
+    m.[mentee_additional_details],
     (
         SELECT 
         n.[notification_dtls_id],
